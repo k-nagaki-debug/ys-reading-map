@@ -5,19 +5,6 @@
   "pages_build_output_dir": "./dist",
   "compatibility_flags": [
     "nodejs_compat"
-  ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "higo-journal-map-db-2",
-      "database_id": "b3cf7000-14cf-4929-9c72-1cca73d96af0"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "IMAGES",
-      "bucket_name": "higo-journal-map-images"
-    }
   ]
   // "vars": {
   //   "MY_VAR": "my-variable"
