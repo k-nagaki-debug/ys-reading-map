@@ -4,7 +4,7 @@ let currentFacilityMarker = null;
 
 // Initialize Leaflet Map
 async function initMap() {
-    // Default center: Tokyo
+    // Default center: Tokyo (will be updated after loading facilities)
     const center = [35.6812, 139.7671];
     
     map = L.map('map').setView(center, 12);
@@ -20,7 +20,7 @@ async function initMap() {
         showFacilityForm(event.latlng);
     });
 
-    // Load existing facilities
+    // Load existing facilities and center map
     await loadFacilities();
 }
 
@@ -142,9 +142,31 @@ async function loadFacilities() {
             
             // Update facility list
             displayFacilityList(facilities);
+            
+            // Center map on facilities if any exist
+            if (facilities.length > 0) {
+                centerMapOnFacilities(facilities);
+            }
         }
     } catch (error) {
         console.error('Error loading facilities:', error);
+    }
+}
+
+// Center map on all facilities
+function centerMapOnFacilities(facilities) {
+    if (facilities.length === 0) return;
+    
+    if (facilities.length === 1) {
+        // Single facility: center on it with zoom 15
+        const facility = facilities[0];
+        map.setView([facility.latitude, facility.longitude], 15);
+    } else {
+        // Multiple facilities: fit bounds to show all markers
+        const bounds = L.latLngBounds(
+            facilities.map(f => [f.latitude, f.longitude])
+        );
+        map.fitBounds(bounds, { padding: [50, 50] });
     }
 }
 
