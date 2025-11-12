@@ -459,6 +459,8 @@ app.get('/', (c) => {
             #map {
                 height: 600px;
                 width: 100%;
+                position: relative;
+                z-index: 1;
             }
             .facility-card {
                 transition: all 0.3s ease;
@@ -466,6 +468,16 @@ app.get('/', (c) => {
             .facility-card:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            #facility-modal {
+                z-index: 9999 !important;
+            }
+            .leaflet-pane {
+                z-index: 400;
+            }
+            .leaflet-top,
+            .leaflet-bottom {
+                z-index: 1000;
             }
         </style>
     </head>
@@ -503,8 +515,8 @@ app.get('/', (c) => {
         </div>
 
         <!-- Facility Form Modal -->
-        <div id="facility-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <div id="facility-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto py-8" style="z-index: 9999;">
+            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 my-auto max-h-[90vh] overflow-y-auto">
                 <h3 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">新規施設登録</h3>
                 <form id="facility-form">
                     <input type="hidden" id="facility-id">
