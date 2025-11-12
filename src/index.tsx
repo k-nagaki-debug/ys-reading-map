@@ -496,21 +496,11 @@ app.get('/', (c) => {
             }
             .admin-button {
                 position: relative;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: #6366f1;
                 border: 2px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(10px);
             }
-            .admin-button::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                border-radius: 0.75rem;
-                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-                opacity: 0;
-                transition: opacity 0.3s;
-            }
-            .admin-button:hover::after {
-                opacity: 1;
+            .admin-button:hover {
+                background: #4f46e5;
             }
             .admin-button:active {
                 transform: scale(0.98);
@@ -528,7 +518,7 @@ app.get('/', (c) => {
                     <p class="text-gray-600">地図上をクリックして施設を登録してください</p>
                 </div>
                 <a href="/admin" class="admin-button group relative inline-flex items-center gap-3 px-6 py-3 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
-                    <i class="fas fa-shield-alt relative z-10 text-lg"></i>
+                    <i class="fas fa-cog relative z-10 text-lg group-hover:rotate-180 transition-transform duration-500"></i>
                     <span class="relative z-10 tracking-wide">管理画面</span>
                     <i class="fas fa-arrow-right relative z-10 group-hover:translate-x-1 transition-transform duration-300 text-sm"></i>
                 </a>
