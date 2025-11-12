@@ -29,6 +29,12 @@ OpenStreetMapとLeaflet.jsを使用して、**APIキー不要**ですぐに使�
 - ✅ レスポンシブデザイン対応
 
 ## URLs
+
+### 本番環境（Cloudflare Pages）
+- **マップビュー**: https://higo-journal-map.pages.dev
+- **管理画面**: https://higo-journal-map.pages.dev/admin
+
+### 開発環境（Sandbox）
 - **マップビュー**: https://3000-ik7qqsck6za7d79ds73q2-8f57ffe2.sandbox.novita.ai
 - **管理画面**: https://3000-ik7qqsck6za7d79ds73q2-8f57ffe2.sandbox.novita.ai/admin
 - **API エンドポイント**: 
