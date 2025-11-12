@@ -172,7 +172,10 @@ npm test                    # サービステスト
 
 ## デプロイ状況
 - **プラットフォーム**: Cloudflare Pages
-- **状態**: ⚠️ 開発環境で動作中（本番デプロイにはCloudflare API Keyが必要）
+- **状態**: ✅ 本番環境デプロイ済み
+- **プロジェクト名**: higo-journal-map
+- **データベース**: Cloudflare D1 (higo-journal-map-db-2)
+- **ストレージ**: Cloudflare R2 (higo-journal-map-images)
 - **最終更新**: 2025-11-12
 
 ## 完了した機能
