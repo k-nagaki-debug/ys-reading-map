@@ -201,7 +201,7 @@ app.get('/admin', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>施設管理画面 - Admin Dashboard</title>
+        <title>肥後ジャーナルマップ管理画面 - Admin Dashboard</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -224,7 +224,7 @@ app.get('/admin', (c) => {
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">
                             <i class="fas fa-cog text-blue-600 mr-2"></i>
-                            施設管理画面
+                            肥後ジャーナルマップ管理画面
                         </h1>
                         <p class="text-sm text-gray-600 mt-1">Facility Management Dashboard</p>
                     </div>
@@ -474,7 +474,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>施設マップ - Facility Map</title>
+        <title>肥後ジャーナルマップ - Higo Journal Map</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -502,7 +502,7 @@ app.get('/', (c) => {
                 <div>
                     <h1 class="text-4xl font-bold text-gray-800 mb-2">
                         <i class="fas fa-map-marked-alt text-blue-600 mr-3"></i>
-                        施設マップ
+                        肥後ジャーナルマップ
                     </h1>
                     <p class="text-gray-600">地図上をクリックして施設を登録してください</p>
                 </div>
