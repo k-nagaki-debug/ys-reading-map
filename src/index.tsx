@@ -410,8 +410,18 @@ app.get('/admin', (c) => {
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
-                    <input type="hidden" id="facility-lat">
-                    <input type="hidden" id="facility-lng">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">緯度 *</label>
+                            <input type="number" step="any" id="facility-lat" required
+                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">経度 *</label>
+                            <input type="number" step="any" id="facility-lng" required
+                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">記事リンク</label>
