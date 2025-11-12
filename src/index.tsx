@@ -415,10 +415,24 @@ app.get('/admin', (c) => {
                         </div>
                     </div>
                     
-                    <div class="mb-6">
+                    <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">ウェブサイト</label>
                         <input type="url" id="facility-website"
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-bold mb-2">施設画像</label>
+                        <input type="file" id="facility-image" accept="image/*"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF形式（最大5MB）</p>
+                        <input type="hidden" id="facility-image-url">
+                        <div id="image-preview" class="mt-2 hidden">
+                            <img id="preview-img" src="" alt="Preview" class="max-w-full h-32 object-cover rounded">
+                            <button type="button" onclick="removeImage()" class="text-red-600 text-sm mt-1 hover:underline">
+                                <i class="fas fa-times"></i> 画像を削除
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="flex gap-2">

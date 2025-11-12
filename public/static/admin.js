@@ -16,6 +16,9 @@ function setupEventListeners() {
     
     // Form submission
     document.getElementById('facility-form').addEventListener('submit', handleFormSubmit);
+    
+    // Image file selection
+    document.getElementById('facility-image').addEventListener('change', handleImageSelection);
 }
 
 // Load all facilities
@@ -101,9 +104,14 @@ function displayFacilities() {
         return `
             <tr class="table-row">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#${facility.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">${facility.name}</div>
-                    ${facility.description ? `<div class="text-xs text-gray-500 truncate max-w-xs">${facility.description}</div>` : ''}
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        ${facility.image_url ? `<img src="${facility.image_url}" alt="${facility.name}" class="w-16 h-16 object-cover rounded">` : '<div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center"><i class="fas fa-image text-gray-400"></i></div>'}
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">${facility.name}</div>
+                            ${facility.description ? `<div class="text-xs text-gray-500 truncate max-w-xs">${facility.description}</div>` : ''}
+                        </div>
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${categoryBadge}</td>
                 <td class="px-6 py-4 text-sm text-gray-900">
@@ -146,6 +154,27 @@ function updateStats() {
     document.getElementById('other-count').textContent = otherCount;
 }
 
+// Handle image file selection
+function handleImageSelection(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('image-preview').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+// Remove image
+function removeImage() {
+    document.getElementById('facility-image').value = '';
+    document.getElementById('facility-image-url').value = '';
+    document.getElementById('image-preview').classList.add('hidden');
+}
+
 // Show add modal
 function showAddModal() {
     const modal = document.getElementById('facility-modal');
@@ -154,6 +183,10 @@ function showAddModal() {
     
     form.reset();
     modalTitle.textContent = '新規施設登録';
+    
+    // Reset image preview
+    document.getElementById('image-preview').classList.add('hidden');
+    document.getElementById('facility-image-url').value = '';
     
     // Set default coordinates (Tokyo)
     document.getElementById('facility-lat').value = '35.6812';
@@ -190,6 +223,17 @@ async function editFacility(facilityId) {
             document.getElementById('facility-lat').value = facility.latitude;
             document.getElementById('facility-lng').value = facility.longitude;
             
+            // Reset image preview
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('facility-image-url').value = '';
+            
+            // Show existing image if available
+            if (facility.image_url) {
+                document.getElementById('facility-image-url').value = facility.image_url;
+                document.getElementById('preview-img').src = facility.image_url;
+                document.getElementById('image-preview').classList.remove('hidden');
+            }
+            
             modal.classList.remove('hidden');
         }
     } catch (error) {
@@ -222,18 +266,38 @@ async function handleFormSubmit(e) {
     e.preventDefault();
     
     const facilityId = document.getElementById('facility-id').value;
-    const facilityData = {
-        name: document.getElementById('facility-name').value,
-        category: document.getElementById('facility-category').value,
-        description: document.getElementById('facility-description').value,
-        address: document.getElementById('facility-address').value,
-        phone: document.getElementById('facility-phone').value,
-        website: document.getElementById('facility-website').value,
-        latitude: parseFloat(document.getElementById('facility-lat').value),
-        longitude: parseFloat(document.getElementById('facility-lng').value)
-    };
+    const imageFile = document.getElementById('facility-image').files[0];
+    let imageUrl = document.getElementById('facility-image-url').value;
     
     try {
+        // Upload image if a new file is selected
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            
+            const uploadResponse = await axios.post('/api/upload-image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            
+            if (uploadResponse.data.success) {
+                imageUrl = uploadResponse.data.data.imageUrl;
+            }
+        }
+        
+        const facilityData = {
+            name: document.getElementById('facility-name').value,
+            category: document.getElementById('facility-category').value,
+            description: document.getElementById('facility-description').value,
+            address: document.getElementById('facility-address').value,
+            phone: document.getElementById('facility-phone').value,
+            website: document.getElementById('facility-website').value,
+            latitude: parseFloat(document.getElementById('facility-lat').value),
+            longitude: parseFloat(document.getElementById('facility-lng').value),
+            image_url: imageUrl || null
+        };
+        
         let response;
         if (facilityId) {
             // Update existing facility
@@ -299,3 +363,4 @@ window.editFacility = editFacility;
 window.deleteFacility = deleteFacility;
 window.viewOnMap = viewOnMap;
 window.applyFilters = applyFilters;
+window.removeImage = removeImage;
