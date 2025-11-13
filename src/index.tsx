@@ -282,10 +282,7 @@ app.get('/admin', requireAuth, (c) => {
             <div class="container mx-auto px-4 py-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">
-                            <i class="fas fa-cog text-blue-600 mr-2"></i>
-                            肥後ジャーナルマップ管理画面
-                        </h1>
+                        <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-12 mb-1">
                         <p class="text-sm text-gray-600 mt-1">Facility Management Dashboard</p>
                     </div>
                     <div class="flex gap-3 items-center">
@@ -562,8 +559,7 @@ app.get('/login', (c) => {
             <div class="max-w-md mx-auto">
                 <!-- Logo and Title -->
                 <div class="text-center mb-8">
-                    <i class="fas fa-map-marked-alt text-6xl text-blue-600 mb-4"></i>
-                    <h1 class="text-3xl font-bold text-gray-800 mb-2">肥後ジャーナルマップ</h1>
+                    <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-20 mx-auto mb-4">
                     <p class="text-gray-600">管理者ログイン</p>
                 </div>
 
@@ -689,10 +685,7 @@ app.get('/', (c) => {
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8 flex justify-between items-center">
                 <div>
-                    <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                        <i class="fas fa-map-marked-alt text-blue-600 mr-3"></i>
-                        肥後ジャーナルマップ
-                    </h1>
+                    <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-16 mb-2">
                     <p class="text-gray-600">
                         マーカーをクリックして詳細を確認できます
                     </p>
@@ -845,10 +838,7 @@ app.get('/edit', requireAuth, (c) => {
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8 flex justify-between items-center">
                 <div>
-                    <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                        <i class="fas fa-map-marked-alt text-blue-600 mr-3"></i>
-                        肥後ジャーナルマップ
-                    </h1>
+                    <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-16 mb-2">
                     <p class="text-gray-600">地図上をクリックして施設を登録してください</p>
                 </div>
                 <div class="flex gap-3 items-center">
