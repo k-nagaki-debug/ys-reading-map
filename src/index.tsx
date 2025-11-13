@@ -34,6 +34,7 @@ app.get('/api/facilities', async (c) => {
     
     return c.json({ success: true, data: results })
   } catch (error) {
+    console.error('Error fetching facilities:', error);
     return c.json({ success: false, error: 'Failed to fetch facilities' }, 500)
   }
 })
