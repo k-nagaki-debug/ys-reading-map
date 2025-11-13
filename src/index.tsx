@@ -289,10 +289,6 @@ app.get('/admin', requireAuth, (c) => {
                         <p class="text-sm text-gray-600 mt-1">Facility Management Dashboard</p>
                     </div>
                     <div class="flex gap-3 items-center">
-                        <a href="/" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                            <i class="fas fa-map-marked-alt mr-2"></i>
-                            トップページ
-                        </a>
                         <a href="/edit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                             <i class="fas fa-edit mr-2"></i>
                             編集モード
@@ -856,10 +852,6 @@ app.get('/edit', requireAuth, (c) => {
                     <p class="text-gray-600">地図上をクリックして施設を登録してください</p>
                 </div>
                 <div class="flex gap-3 items-center">
-                    <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition">
-                        <i class="fas fa-home"></i>
-                        トップページ
-                    </a>
                     <a href="/admin" class="admin-button group relative inline-flex items-center gap-3 px-6 py-3 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
                         <i class="fas fa-cog relative z-10 text-lg group-hover:rotate-180 transition-transform duration-500"></i>
                         <span class="relative z-10 tracking-wide">管理画面</span>
