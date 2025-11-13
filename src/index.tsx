@@ -1,11 +1,14 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 
 type Bindings = {
   DB: D1Database;
   IMAGES: R2Bucket;
   GOOGLE_MAPS_API_KEY?: string;
+  ADMIN_USERNAME?: string;
+  ADMIN_PASSWORD?: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -16,11 +19,67 @@ app.use('/api/*', cors())
 // Serve static files
 app.use('/static/*', serveStatic({ root: './' }))
 
+// Authentication middleware
+const requireAuth = async (c: any, next: any) => {
+  const sessionToken = getCookie(c, 'session_token')
+  
+  if (!sessionToken || sessionToken !== 'authenticated') {
+    return c.redirect('/login')
+  }
+  
+  await next()
+}
+
+// Check if user is authenticated
+const isAuthenticated = (c: any) => {
+  const sessionToken = getCookie(c, 'session_token')
+  return sessionToken === 'authenticated'
+}
+
 // Get Google Maps API Key
 app.get('/api/config/google-maps-key', (c) => {
   return c.json({ 
     apiKey: c.env.GOOGLE_MAPS_API_KEY || '' 
   })
+})
+
+// Check authentication status
+app.get('/api/auth/status', (c) => {
+  return c.json({ 
+    authenticated: isAuthenticated(c)
+  })
+})
+
+// Login endpoint
+app.post('/api/auth/login', async (c) => {
+  try {
+    const { username, password } = await c.req.json()
+    
+    const adminUsername = c.env.ADMIN_USERNAME || 'admin'
+    const adminPassword = c.env.ADMIN_PASSWORD || 'higo2024'
+    
+    if (username === adminUsername && password === adminPassword) {
+      setCookie(c, 'session_token', 'authenticated', {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Lax'
+      })
+      
+      return c.json({ success: true, message: 'ログインしました' })
+    } else {
+      return c.json({ success: false, error: 'ユーザー名またはパスワードが正しくありません' }, 401)
+    }
+  } catch (error) {
+    return c.json({ success: false, error: 'ログインに失敗しました' }, 500)
+  }
+})
+
+// Logout endpoint
+app.post('/api/auth/logout', (c) => {
+  deleteCookie(c, 'session_token', { path: '/' })
+  return c.json({ success: true, message: 'ログアウトしました' })
 })
 
 // API Routes for Facilities
@@ -195,7 +254,7 @@ app.delete('/api/facilities/:id', async (c) => {
 })
 
 // Admin page
-app.get('/admin', (c) => {
+app.get('/admin', requireAuth, (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html lang="ja">
@@ -237,6 +296,10 @@ app.get('/admin', (c) => {
                         <button onclick="showAddModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                             <i class="fas fa-plus mr-2"></i>
                             新規登録
+                        </button>
+                        <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            ログアウト
                         </button>
                     </div>
                 </div>
@@ -461,7 +524,130 @@ app.get('/admin', (c) => {
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+            async function logout() {
+                try {
+                    await axios.post('/api/auth/logout');
+                    window.location.href = '/login';
+                } catch (error) {
+                    console.error('Logout failed:', error);
+                    alert('ログアウトに失敗しました');
+                }
+            }
+        </script>
         <script src="/static/admin.js"></script>
+    </body>
+    </html>
+  `)
+})
+
+// Login page
+app.get('/login', (c) => {
+  // If already authenticated, redirect to main page
+  if (isAuthenticated(c)) {
+    return c.redirect('/')
+  }
+  
+  return c.html(`
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ログイン - 肥後ジャーナルマップ</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+        <div class="container mx-auto px-4">
+            <div class="max-w-md mx-auto">
+                <!-- Logo and Title -->
+                <div class="text-center mb-8">
+                    <i class="fas fa-map-marked-alt text-6xl text-blue-600 mb-4"></i>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">肥後ジャーナルマップ</h1>
+                    <p class="text-gray-600">管理者ログイン</p>
+                </div>
+
+                <!-- Login Card -->
+                <div class="bg-white rounded-lg shadow-xl p-8">
+                    <form id="login-form">
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-bold mb-2">
+                                <i class="fas fa-user mr-2"></i>
+                                ユーザー名
+                            </label>
+                            <input type="text" id="username" required 
+                                   class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="ユーザー名を入力">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-bold mb-2">
+                                <i class="fas fa-lock mr-2"></i>
+                                パスワード
+                            </label>
+                            <input type="password" id="password" required 
+                                   class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="パスワードを入力">
+                        </div>
+
+                        <div id="error-message" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span id="error-text"></span>
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-sign-in-alt"></i>
+                            ログイン
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <a href="/view" class="text-blue-600 hover:text-blue-800 transition">
+                            <i class="fas fa-eye mr-2"></i>
+                            ログインせずに閲覧する
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="mt-6 text-center text-sm text-gray-600">
+                    <p>デフォルト認証情報:</p>
+                    <p class="font-mono bg-white px-3 py-2 rounded mt-2">
+                        ユーザー名: admin / パスワード: higo2024
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+            const form = document.getElementById('login-form');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    const response = await axios.post('/api/auth/login', {
+                        username,
+                        password
+                    });
+
+                    if (response.data.success) {
+                        window.location.href = '/';
+                    }
+                } catch (error) {
+                    errorMessage.classList.remove('hidden');
+                    errorText.textContent = error.response?.data?.error || 'ログインに失敗しました';
+                }
+            });
+        </script>
     </body>
     </html>
   `)
@@ -513,15 +699,8 @@ app.get('/view', (c) => {
                         閲覧専用モード - マーカーをクリックして詳細を確認できます
                     </p>
                 </div>
-                <div class="flex gap-3">
-                    <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition">
-                        <i class="fas fa-edit"></i>
-                        編集モード
-                    </a>
-                    <a href="/admin" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition">
-                        <i class="fas fa-cog"></i>
-                        管理画面
-                    </a>
+                <div class="flex gap-3" id="header-buttons">
+                    <!-- Buttons will be dynamically loaded based on auth status -->
                 </div>
             </div>
 
@@ -572,14 +751,63 @@ app.get('/view', (c) => {
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         <!-- Leaflet JS -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+            // Check authentication status and show appropriate buttons
+            async function checkAuth() {
+                try {
+                    const response = await axios.get('/api/auth/status');
+                    const buttonsContainer = document.getElementById('header-buttons');
+                    
+                    if (response.data.authenticated) {
+                        // Show edit mode and admin buttons
+                        buttonsContainer.innerHTML = \`
+                            <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition">
+                                <i class="fas fa-edit"></i>
+                                編集モード
+                            </a>
+                            <a href="/admin" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition">
+                                <i class="fas fa-cog"></i>
+                                管理画面
+                            </a>
+                            <button onclick="logout()" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow hover:bg-red-700 transition">
+                                <i class="fas fa-sign-out-alt"></i>
+                                ログアウト
+                            </button>
+                        \`;
+                    } else {
+                        // Show login button
+                        buttonsContainer.innerHTML = \`
+                            <a href="/login" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition">
+                                <i class="fas fa-sign-in-alt"></i>
+                                ログイン
+                            </a>
+                        \`;
+                    }
+                } catch (error) {
+                    console.error('Failed to check auth status:', error);
+                }
+            }
+            
+            async function logout() {
+                try {
+                    await axios.post('/api/auth/logout');
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Logout failed:', error);
+                }
+            }
+            
+            // Check auth on page load
+            checkAuth();
+        </script>
         <script src="/static/view.js"></script>
     </body>
     </html>
   `)
 })
 
-// Main page
-app.get('/', (c) => {
+// Main page (requires authentication)
+app.get('/', requireAuth, (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html lang="ja">
@@ -639,6 +867,10 @@ app.get('/', (c) => {
                         <span class="relative z-10 tracking-wide">管理画面</span>
                         <i class="fas fa-arrow-right relative z-10 group-hover:translate-x-1 transition-transform duration-300 text-sm"></i>
                     </a>
+                    <button onclick="logout()" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow hover:bg-red-700 transition">
+                        <i class="fas fa-sign-out-alt"></i>
+                        ログアウト
+                    </button>
                 </div>
             </div>
 
@@ -771,6 +1003,17 @@ app.get('/', (c) => {
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
         <!-- Leaflet JS -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+            async function logout() {
+                try {
+                    await axios.post('/api/auth/logout');
+                    window.location.href = '/login';
+                } catch (error) {
+                    console.error('Logout failed:', error);
+                    alert('ログアウトに失敗しました');
+                }
+            }
+        </script>
         <script src="/static/app.js"></script>
     </body>
     </html>
