@@ -761,13 +761,9 @@ app.get('/', (c) => {
                     const buttonsContainer = document.getElementById('header-buttons');
                     
                     if (response.data.authenticated) {
-                        // Show edit mode and admin links for authenticated users
+                        // Show admin link and logout for authenticated users
                         buttonsContainer.innerHTML = \`
                             <div class="flex items-center gap-4">
-                                <a href="/edit" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition">
-                                    <i class="fas fa-edit"></i>
-                                    編集モード
-                                </a>
                                 <a href="/admin" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition">
                                     <i class="fas fa-cog"></i>
                                     管理画面
@@ -859,17 +855,17 @@ app.get('/edit', requireAuth, (c) => {
                     </h1>
                     <p class="text-gray-600">地図上をクリックして施設を登録してください</p>
                 </div>
-                <div class="flex gap-3">
-                    <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
-                        <i class="fas fa-eye"></i>
-                        閲覧モード
+                <div class="flex gap-3 items-center">
+                    <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow hover:bg-gray-700 transition">
+                        <i class="fas fa-home"></i>
+                        トップページ
                     </a>
                     <a href="/admin" class="admin-button group relative inline-flex items-center gap-3 px-6 py-3 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
                         <i class="fas fa-cog relative z-10 text-lg group-hover:rotate-180 transition-transform duration-500"></i>
                         <span class="relative z-10 tracking-wide">管理画面</span>
                         <i class="fas fa-arrow-right relative z-10 group-hover:translate-x-1 transition-transform duration-300 text-sm"></i>
                     </a>
-                    <button onclick="logout()" class="text-sm text-gray-600 hover:text-gray-800 underline ml-4">
+                    <button onclick="logout()" class="text-sm text-gray-600 hover:text-gray-800 underline">
                         ログアウト
                     </button>
                 </div>
