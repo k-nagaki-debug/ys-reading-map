@@ -1,9 +1,9 @@
 let map;
 let markers = [];
 let infoWindows = [];
-let currentFacilityMarker = null;
-let allFacilities = [];
-let filteredFacilities = [];
+let currentHospitalMarker = null;
+let allHospitals = [];
+let filteredHospitals = [];
 
 // Initialize Google Map
 async function initMap() {
@@ -22,7 +22,7 @@ async function initMap() {
     // ユーザーは「新規作成」ボタンから登録フォームを開く
 
     // Load existing facilities
-    await loadFacilities();
+    await loadHospitals();
     
     // Setup search and filter listeners
     setupSearchAndFilter();
@@ -45,24 +45,24 @@ function setupSearchAndFilter() {
 // Apply search and filter
 function applyFilters() {
     const searchTerm = document.getElementById('map-search-input')?.value.toLowerCase() || '';
-    const selectedCategory = document.getElementById('map-category-filter')?.value || '';
+    const selectedDepartment = document.getElementById('map-category-filter')?.value || '';
     
-    filteredFacilities = allFacilities.filter(facility => {
+    filteredHospitals = allHospitals.filter(hospital => {
         const matchesSearch = !searchTerm || 
-            facility.name.toLowerCase().includes(searchTerm) ||
-            (facility.description && facility.description.toLowerCase().includes(searchTerm)) ||
-            (facility.address && facility.address.toLowerCase().includes(searchTerm));
+            hospital.name.toLowerCase().includes(searchTerm) ||
+            (hospital.description && hospital.description.toLowerCase().includes(searchTerm)) ||
+            (hospital.address && hospital.address.toLowerCase().includes(searchTerm));
         
-        const matchesCategory = !selectedCategory || facility.category === selectedCategory;
+        const matchesDepartment = !selectedDepartment || hospital.departments === selectedDepartment;
         
-        return matchesSearch && matchesCategory;
+        return matchesSearch && matchesDepartment;
     });
     
     // Update markers on map
     updateMarkers();
     
     // Update facility list
-    displayFacilityList(filteredFacilities);
+    displayHospitalList(filteredHospitals);
 }
 
 // Update markers based on filtered facilities
@@ -74,23 +74,23 @@ function updateMarkers() {
     infoWindows = [];
     
     // Add markers for filtered facilities (only if they have coordinates)
-    filteredFacilities.forEach(facility => {
-        if (facility.latitude && facility.longitude) {
-            addMarker(facility);
+    filteredHospitals.forEach(hospital => {
+        if (hospital.latitude && hospital.longitude) {
+            addMarker(hospital);
         }
     });
     
     // Center map on filtered facilities with coordinates
-    const facilitiesWithCoords = filteredFacilities.filter(f => f.latitude && f.longitude);
+    const facilitiesWithCoords = filteredHospitals.filter(f => f.latitude && f.longitude);
     if (facilitiesWithCoords.length > 0) {
-        centerMapOnFacilities(facilitiesWithCoords);
+        centerMapOnHospitals(facilitiesWithCoords);
     }
 }
 
 // Show facility form when map is clicked
-function showFacilityForm(latLng, facilityData = null) {
-    const modal = document.getElementById('facility-modal');
-    const form = document.getElementById('facility-form');
+function showHospitalForm(latLng, hospitalData = null) {
+    const modal = document.getElementById('hospital-modal');
+    const form = document.getElementById('hospital-form');
     const modalTitle = document.getElementById('modal-title');
     
     // Reset form
@@ -98,38 +98,38 @@ function showFacilityForm(latLng, facilityData = null) {
     
     // Reset image preview
     document.getElementById('image-preview').classList.add('hidden');
-    document.getElementById('facility-image-url').value = '';
+    document.getElementById('hospital-image-url').value = '';
     
-    if (facilityData) {
+    if (hospitalData) {
         // Edit mode
         modalTitle.textContent = '施設情報編集';
-        document.getElementById('facility-id').value = facilityData.id;
-        document.getElementById('facility-name').value = facilityData.name;
-        document.getElementById('facility-category').value = facilityData.category || '';
-        document.getElementById('facility-description').value = facilityData.description || '';
-        document.getElementById('facility-address').value = facilityData.address || '';
-        document.getElementById('facility-phone').value = facilityData.phone || '';
-        document.getElementById('facility-website').value = facilityData.website || '';
-        document.getElementById('facility-lat').value = facilityData.latitude || '';
-        document.getElementById('facility-lng').value = facilityData.longitude || '';
+        document.getElementById('hospital-id').value = hospitalData.id;
+        document.getElementById('hospital-name').value = hospitalData.name;
+        document.getElementById('hospital-departments').value = hospitalData.category || '';
+        document.getElementById('hospital-description').value = hospitalData.description || '';
+        document.getElementById('hospital-address').value = hospitalData.address || '';
+        document.getElementById('hospital-phone').value = hospitalData.phone || '';
+        document.getElementById('hospital-website').value = hospitalData.website || '';
+        document.getElementById('hospital-lat').value = hospitalData.latitude || '';
+        document.getElementById('hospital-lng').value = hospitalData.longitude || '';
         
         // Show existing image if available
-        if (facilityData.image_url) {
-            document.getElementById('facility-image-url').value = facilityData.image_url;
-            document.getElementById('preview-img').src = facilityData.image_url;
+        if (hospitalData.image_url) {
+            document.getElementById('hospital-image-url').value = hospitalData.image_url;
+            document.getElementById('preview-img').src = hospitalData.image_url;
             document.getElementById('image-preview').classList.remove('hidden');
         }
     } else {
         // Create mode
         modalTitle.textContent = '新規施設登録';
         // 緯度・経度は空のまま（ユーザーが入力可能）
-        document.getElementById('facility-lat').value = '';
-        document.getElementById('facility-lng').value = '';
+        document.getElementById('hospital-lat').value = '';
+        document.getElementById('hospital-lng').value = '';
         
         // マップクリックから呼び出された場合は一時マーカーを削除
-        if (currentFacilityMarker) {
-            currentFacilityMarker.setMap(null);
-            currentFacilityMarker = null;
+        if (currentHospitalMarker) {
+            currentHospitalMarker.setMap(null);
+            currentHospitalMarker = null;
         }
     }
     
@@ -138,18 +138,18 @@ function showFacilityForm(latLng, facilityData = null) {
 
 // Close modal
 function closeModal() {
-    const modal = document.getElementById('facility-modal');
+    const modal = document.getElementById('hospital-modal');
     modal.classList.add('hidden');
     
     // Remove temporary marker
-    if (currentFacilityMarker) {
-        currentFacilityMarker.setMap(null);
-        currentFacilityMarker = null;
+    if (currentHospitalMarker) {
+        currentHospitalMarker.setMap(null);
+        currentHospitalMarker = null;
     }
 }
 
 // Handle image file selection
-document.getElementById('facility-image').addEventListener('change', async (e) => {
+document.getElementById('hospital-image').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
@@ -164,18 +164,18 @@ document.getElementById('facility-image').addEventListener('change', async (e) =
 
 // Remove image
 function removeImage() {
-    document.getElementById('facility-image').value = '';
-    document.getElementById('facility-image-url').value = '';
+    document.getElementById('hospital-image').value = '';
+    document.getElementById('hospital-image-url').value = '';
     document.getElementById('image-preview').classList.add('hidden');
 }
 
 // Handle form submission
-document.getElementById('facility-form').addEventListener('submit', async (e) => {
+document.getElementById('hospital-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const facilityId = document.getElementById('facility-id').value;
-    const imageFile = document.getElementById('facility-image').files[0];
-    let imageUrl = document.getElementById('facility-image-url').value;
+    const facilityId = document.getElementById('hospital-id').value;
+    const imageFile = document.getElementById('hospital-image').files[0];
+    let imageUrl = document.getElementById('hospital-image-url').value;
     
     try {
         // Upload image if a new file is selected
@@ -194,34 +194,34 @@ document.getElementById('facility-form').addEventListener('submit', async (e) =>
             }
         }
         
-        const latValue = document.getElementById('facility-lat').value;
-        const lngValue = document.getElementById('facility-lng').value;
+        const latValue = document.getElementById('hospital-lat').value;
+        const lngValue = document.getElementById('hospital-lng').value;
         
-        const facilityData = {
-            name: document.getElementById('facility-name').value,
-            category: document.getElementById('facility-category').value,
-            description: document.getElementById('facility-description').value,
-            address: document.getElementById('facility-address').value,
-            phone: document.getElementById('facility-phone').value,
-            website: document.getElementById('facility-website').value,
+        const hospitalData = {
+            name: document.getElementById('hospital-name').value,
+            category: document.getElementById('hospital-departments').value,
+            description: document.getElementById('hospital-description').value,
+            address: document.getElementById('hospital-address').value,
+            phone: document.getElementById('hospital-phone').value,
+            website: document.getElementById('hospital-website').value,
             latitude: latValue ? parseFloat(latValue) : null,
             longitude: lngValue ? parseFloat(lngValue) : null,
             image_url: imageUrl || null
         };
         
         let response;
-        if (facilityId) {
+        if (hospitalId) {
             // Update existing facility
-            response = await axios.put(`/api/facilities/${facilityId}`, facilityData);
+            response = await axios.put(`/api/hospitals/${facilityId}`, hospitalData);
         } else {
             // Create new facility
-            response = await axios.post('/api/facilities', facilityData);
+            response = await axios.post('/api/hospitals', hospitalData);
         }
         
         if (response.data.success) {
             closeModal();
-            await loadFacilities();
-            alert(facilityId ? '施設情報を更新しました' : '施設を登録しました');
+            await loadHospitals();
+            alert(hospitalId ? '施設情報を更新しました' : '施設を登録しました');
         }
     } catch (error) {
         console.error('Error saving facility:', error);
@@ -230,13 +230,13 @@ document.getElementById('facility-form').addEventListener('submit', async (e) =>
 });
 
 // Load all facilities
-async function loadFacilities() {
+async function loadHospitals() {
     try {
-        const response = await axios.get('/api/facilities');
+        const response = await axios.get('/api/hospitals');
         
         if (response.data.success) {
-            allFacilities = response.data.data;
-            filteredFacilities = [...allFacilities];
+            allHospitals = response.data.data;
+            filteredHospitals = [...allHospitals];
             
             // Clear existing markers
             markers.forEach(marker => marker.setMap(null));
@@ -245,19 +245,19 @@ async function loadFacilities() {
             infoWindows = [];
             
             // Add markers for each facility (only if they have coordinates)
-            filteredFacilities.forEach(facility => {
-                if (facility.latitude && facility.longitude) {
-                    addMarker(facility);
+            filteredHospitals.forEach(hospital => {
+                if (hospital.latitude && hospital.longitude) {
+                    addMarker(hospital);
                 }
             });
             
             // Update facility list
-            displayFacilityList(filteredFacilities);
+            displayHospitalList(filteredHospitals);
             
             // Center map on facilities with coordinates
-            const facilitiesWithCoords = filteredFacilities.filter(f => f.latitude && f.longitude);
+            const facilitiesWithCoords = filteredHospitals.filter(f => f.latitude && f.longitude);
             if (facilitiesWithCoords.length > 0) {
-                centerMapOnFacilities(facilitiesWithCoords);
+                centerMapOnHospitals(facilitiesWithCoords);
             }
             // マップ位置はデフォルトのまま（熊本市中心）
         }
@@ -267,13 +267,13 @@ async function loadFacilities() {
 }
 
 // Center map on all facilities
-function centerMapOnFacilities(facilities) {
+function centerMapOnHospitals(facilities) {
     if (facilities.length === 0) return;
     
     if (facilities.length === 1) {
         // Single facility: center on it with zoom 15
-        const facility = facilities[0];
-        map.setCenter({ lat: facility.latitude, lng: facility.longitude });
+        const hospital = facilities[0];
+        map.setCenter({ lat: hospital.latitude, lng: hospital.longitude });
         map.setZoom(15);
     } else {
         // Multiple facilities: fit bounds to show all markers
@@ -286,21 +286,21 @@ function centerMapOnFacilities(facilities) {
 }
 
 // Add marker to map
-function addMarker(facility) {
-    const position = { lat: facility.latitude, lng: facility.longitude };
+function addMarker(hospital) {
+    const position = { lat: hospital.latitude, lng: hospital.longitude };
     
     // Red marker for saved facilities
     const marker = new google.maps.Marker({
         position: position,
         map: map,
-        title: facility.name,
+        title: hospital.name,
         icon: {
             url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
         }
     });
     
     // Create info window content
-    const infoContent = createPopupContent(facility);
+    const infoContent = createPopupContent(hospital);
     const infoWindow = new google.maps.InfoWindow({
         content: infoContent
     });
@@ -315,31 +315,31 @@ function addMarker(facility) {
     infoWindows.push(infoWindow);
     
     // Store facility data with marker
-    marker.facilityData = facility;
+    marker.hospitalData = facility;
 }
 
 // Create popup content
-function createPopupContent(facility) {
-    const categoryBadge = facility.category ? 
-        `<span style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">${facility.category}</span>` : '';
+function createPopupContent(hospital) {
+    const categoryBadge = hospital.departments ? 
+        `<span style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">${hospital.departments}</span>` : '';
     
-    const imageHtml = facility.image_url ? 
-        `<img src="${facility.image_url}" alt="${facility.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 0.5rem; margin-top: 0.5rem;">` : '';
+    const imageHtml = hospital.image_url ? 
+        `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 0.5rem; margin-top: 0.5rem;">` : '';
     
     return `
         <div style="max-width: 300px;">
-            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem; color: #1f2937;">${facility.name}</h3>
+            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem; color: #1f2937;">${hospital.name}</h3>
             ${categoryBadge}
             ${imageHtml}
-            ${facility.description ? `<p style="margin-top: 0.5rem; color: #374151;">${facility.description}</p>` : ''}
-            ${facility.address ? `<p style="margin-top: 0.5rem; font-size: 0.875rem; color: #4b5563;"><i class="fas fa-map-marker-alt"></i> ${facility.address}</p>` : ''}
-            ${facility.phone ? `<p style="font-size: 0.875rem; color: #4b5563;"><i class="fas fa-phone"></i> ${facility.phone}</p>` : ''}
-            ${facility.website ? `<p style="font-size: 0.875rem;"><a href="${facility.website}" target="_blank" style="color: #2563eb; text-decoration: underline;"><i class="fas fa-external-link-alt"></i> 記事リンク</a></p>` : ''}
+            ${hospital.description ? `<p style="margin-top: 0.5rem; color: #374151;">${hospital.description}</p>` : ''}
+            ${hospital.address ? `<p style="margin-top: 0.5rem; font-size: 0.875rem; color: #4b5563;"><i class="fas fa-map-marker-alt"></i> ${hospital.address}</p>` : ''}
+            ${hospital.phone ? `<p style="font-size: 0.875rem; color: #4b5563;"><i class="fas fa-phone"></i> ${hospital.phone}</p>` : ''}
+            ${hospital.website ? `<p style="font-size: 0.875rem;"><a href="${hospital.website}" target="_blank" style="color: #2563eb; text-decoration: underline;"><i class="fas fa-external-link-alt"></i> 記事リンク</a></p>` : ''}
             <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
-                <button onclick="editFacility(${facility.id})" style="font-size: 0.875rem; background-color: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
+                <button onclick="editFacility(${hospital.id})" style="font-size: 0.875rem; background-color: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
                     <i class="fas fa-edit"></i> 編集
                 </button>
-                <button onclick="deleteFacility(${facility.id})" style="font-size: 0.875rem; background-color: #ef4444; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
+                <button onclick="deleteHospital(${hospital.id})" style="font-size: 0.875rem; background-color: #ef4444; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
                     <i class="fas fa-trash"></i> 削除
                 </button>
             </div>
@@ -348,34 +348,34 @@ function createPopupContent(facility) {
 }
 
 // Display facility list
-function displayFacilityList(facilities) {
-    const listContainer = document.getElementById('facility-list');
+function displayHospitalList(facilities) {
+    const listContainer = document.getElementById('hospital-list');
     
     if (facilities.length === 0) {
         listContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">登録された施設はありません</p>';
         return;
     }
     
-    listContainer.innerHTML = facilities.map(facility => {
-        const hasCoords = facility.latitude && facility.longitude;
-        const onclickAttr = hasCoords ? `onclick="focusOnFacility(${facility.latitude}, ${facility.longitude})"` : '';
+    listContainer.innerHTML = facilities.map(hospital => {
+        const hasCoords = hospital.latitude && hospital.longitude;
+        const onclickAttr = hasCoords ? `onclick="focusOnHospital(${hospital.latitude}, ${hospital.longitude})"` : '';
         const cursorClass = hasCoords ? 'cursor-pointer' : '';
         
         return `
         <div class="facility-card bg-gray-50 p-4 rounded-lg border border-gray-200 ${cursorClass}"
              ${onclickAttr}>
-            ${facility.image_url ? `<img src="${facility.image_url}" alt="${facility.name}" class="w-full h-40 object-cover rounded-lg mb-3">` : ''}
-            <h3 class="text-lg font-bold text-gray-800 mb-1">${facility.name}</h3>
-            ${facility.category ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mb-2">${facility.category}</span>` : ''}
+            ${hospital.image_url ? `<img src="${hospital.image_url}" alt="${hospital.name}" class="w-full h-40 object-cover rounded-lg mb-3">` : ''}
+            <h3 class="text-lg font-bold text-gray-800 mb-1">${hospital.name}</h3>
+            ${hospital.departments ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mb-2">${hospital.departments}</span>` : ''}
             ${!hasCoords ? `<span class="inline-block bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded mb-2"><i class="fas fa-map-marker-slash"></i> 位置情報なし</span>` : ''}
-            ${facility.description ? `<p class="text-sm text-gray-600 mt-2 line-clamp-2">${facility.description}</p>` : ''}
-            ${facility.address ? `<p class="text-xs text-gray-500 mt-2"><i class="fas fa-map-marker-alt"></i> ${facility.address}</p>` : ''}
+            ${hospital.description ? `<p class="text-sm text-gray-600 mt-2 line-clamp-2">${hospital.description}</p>` : ''}
+            ${hospital.address ? `<p class="text-xs text-gray-500 mt-2"><i class="fas fa-map-marker-alt"></i> ${hospital.address}</p>` : ''}
             <div class="mt-3 flex gap-2">
-                <button onclick="event.stopPropagation(); editFacility(${facility.id})" 
+                <button onclick="event.stopPropagation(); editFacility(${hospital.id})" 
                         class="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
                     <i class="fas fa-edit"></i> 編集
                 </button>
-                <button onclick="event.stopPropagation(); deleteFacility(${facility.id})" 
+                <button onclick="event.stopPropagation(); deleteHospital(${hospital.id})" 
                         class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
                     <i class="fas fa-trash"></i> 削除
                 </button>
@@ -386,13 +386,13 @@ function displayFacilityList(facilities) {
 }
 
 // Focus on facility when clicked from list
-function focusOnFacility(lat, lng) {
+function focusOnHospital(lat, lng) {
     map.setCenter({ lat: lat, lng: lng });
     map.setZoom(15);
     
     // Find and open the marker's info window
-    const marker = markers.find(m => m.facilityData && 
-        m.facilityData.latitude === lat && m.facilityData.longitude === lng);
+    const marker = markers.find(m => m.hospitalData && 
+        m.hospitalData.latitude === lat && m.hospitalData.longitude === lng);
     const infoWindow = infoWindows[markers.indexOf(marker)];
     
     if (marker && infoWindow) {
@@ -409,14 +409,14 @@ function focusOnFacility(lat, lng) {
 }
 
 // Edit facility
-async function editFacility(facilityId) {
+async function editFacility(hospitalId) {
     try {
-        const response = await axios.get(`/api/facilities/${facilityId}`);
+        const response = await axios.get(`/api/hospitals/${facilityId}`);
         
         if (response.data.success) {
-            const facility = response.data.data;
-            const latLng = { lat: facility.latitude, lng: facility.longitude };
-            showFacilityForm(latLng, facility);
+            const hospital = response.data.data;
+            const latLng = { lat: hospital.latitude, lng: hospital.longitude };
+            showHospitalForm(latLng, hospital);
         }
     } catch (error) {
         console.error('Error loading facility:', error);
@@ -425,16 +425,16 @@ async function editFacility(facilityId) {
 }
 
 // Delete facility
-async function deleteFacility(facilityId) {
+async function deleteHospital(hospitalId) {
     if (!confirm('この施設を削除してもよろしいですか？')) {
         return;
     }
     
     try {
-        const response = await axios.delete(`/api/facilities/${facilityId}`);
+        const response = await axios.delete(`/api/hospitals/${facilityId}`);
         
         if (response.data.success) {
-            await loadFacilities();
+            await loadHospitals();
             alert('施設を削除しました');
         }
     } catch (error) {
@@ -444,13 +444,13 @@ async function deleteFacility(facilityId) {
 }
 
 // Show new facility form (without map click)
-function showNewFacilityForm() {
-    showFacilityForm(null);
+function showNewHospitalForm() {
+    showHospitalForm(null);
 }
 
 // Geocode address to get coordinates
 async function geocodeAddress() {
-    const addressInput = document.getElementById('facility-address');
+    const addressInput = document.getElementById('hospital-address');
     const address = addressInput.value.trim();
     
     if (!address) {
@@ -469,15 +469,15 @@ async function geocodeAddress() {
                 const lng = location.lng();
                 
                 // Set coordinates
-                document.getElementById('facility-lat').value = lat;
-                document.getElementById('facility-lng').value = lng;
+                document.getElementById('hospital-lat').value = lat;
+                document.getElementById('hospital-lng').value = lng;
                 
                 // Show marker on map
-                if (currentFacilityMarker) {
-                    currentFacilityMarker.setMap(null);
+                if (currentHospitalMarker) {
+                    currentHospitalMarker.setMap(null);
                 }
                 
-                currentFacilityMarker = new google.maps.Marker({
+                currentHospitalMarker = new google.maps.Marker({
                     position: { lat: lat, lng: lng },
                     map: map,
                     icon: {
@@ -512,9 +512,9 @@ async function geocodeAddress() {
 
 // Make functions available globally
 window.closeModal = closeModal;
-window.showNewFacilityForm = showNewFacilityForm;
+window.showNewHospitalForm = showNewHospitalForm;
 window.editFacility = editFacility;
-window.deleteFacility = deleteFacility;
-window.focusOnFacility = focusOnFacility;
+window.deleteHospital = deleteHospital;
+window.focusOnHospital = focusOnHospital;
 window.removeImage = removeImage;
 window.geocodeAddress = geocodeAddress;

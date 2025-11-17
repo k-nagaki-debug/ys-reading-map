@@ -1,9 +1,9 @@
-let allFacilities = [];
-let filteredFacilities = [];
+let allHospitals = [];
+let filteredHospitals = [];
 
 // Load facilities on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadFacilities();
+    await loadHospitals();
     setupEventListeners();
 });
 
@@ -11,17 +11,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
     // Real-time search
     const searchInput = document.getElementById('search-input');
-    const categoryFilter = document.getElementById('category-filter');
+    const departmentFilter = document.getElementById('category-filter');
     const sortSelect = document.getElementById('sort-select');
-    const facilityForm = document.getElementById('facility-form');
-    const facilityImage = document.getElementById('facility-image');
+    const facilityForm = document.getElementById('hospital-form');
+    const facilityImage = document.getElementById('hospital-image');
     
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
     }
     
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', applyFilters);
+    if (departmentFilter) {
+        departmentFilter.addEventListener('change', applyFilters);
     }
     
     if (sortSelect) {
@@ -29,26 +29,26 @@ function setupEventListeners() {
     }
     
     // Form submission
-    if (facilityForm) {
+    if (hospitalForm) {
         facilityForm.addEventListener('submit', handleFormSubmit);
     }
     
     // Image file selection
-    if (facilityImage) {
+    if (hospitalImage) {
         facilityImage.addEventListener('change', handleImageSelection);
     }
 }
 
 // Load all facilities
-async function loadFacilities() {
+async function loadHospitals() {
     try {
-        const response = await axios.get('/api/facilities');
+        const response = await axios.get('/api/hospitals');
         
         if (response.data.success) {
-            allFacilities = response.data.data;
-            filteredFacilities = [...allFacilities];
+            allHospitals = response.data.data;
+            filteredHospitals = [...allHospitals];
             applyFilters();
-            updateStats();
+            updateHospitalStats();
         }
     } catch (error) {
         console.error('Error loading facilities:', error);
@@ -59,23 +59,23 @@ async function loadFacilities() {
 // Apply filters and sorting
 function applyFilters() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    const categoryFilter = document.getElementById('category-filter').value;
+    const departmentFilter = document.getElementById('category-filter').value;
     const sortOption = document.getElementById('sort-select').value;
     
     // Filter
-    filteredFacilities = allFacilities.filter(facility => {
+    filteredHospitals = allHospitals.filter(hospital => {
         const matchesSearch = !searchTerm || 
-            facility.name.toLowerCase().includes(searchTerm) ||
-            (facility.description && facility.description.toLowerCase().includes(searchTerm)) ||
-            (facility.address && facility.address.toLowerCase().includes(searchTerm));
+            hospital.name.toLowerCase().includes(searchTerm) ||
+            (hospital.description && hospital.description.toLowerCase().includes(searchTerm)) ||
+            (hospital.address && hospital.address.toLowerCase().includes(searchTerm));
         
-        const matchesCategory = !categoryFilter || facility.category === categoryFilter;
+        const matchesDepartment = !departmentFilter || hospital.departments === departmentFilter;
         
-        return matchesSearch && matchesCategory;
+        return matchesSearch && matchesDepartment;
     });
     
     // Sort
-    filteredFacilities.sort((a, b) => {
+    filteredHospitals.sort((a, b) => {
         switch (sortOption) {
             case 'created_desc':
                 return new Date(b.created_at) - new Date(a.created_at);
@@ -90,15 +90,15 @@ function applyFilters() {
         }
     });
     
-    displayFacilities();
+    displayHospitals();
 }
 
 // Display facilities in table
-function displayFacilities() {
-    const tbody = document.getElementById('facilities-table-body');
+function displayHospitals() {
+    const tbody = document.getElementById('hospitals-table-body');
     const noData = document.getElementById('no-data');
     
-    if (filteredFacilities.length === 0) {
+    if (filteredHospitals.length === 0) {
         tbody.innerHTML = '';
         noData.classList.remove('hidden');
         return;
@@ -106,12 +106,12 @@ function displayFacilities() {
     
     noData.classList.add('hidden');
     
-    tbody.innerHTML = filteredFacilities.map(facility => {
-        const categoryBadge = facility.category 
-            ? `<span class="status-badge bg-blue-100 text-blue-800">${facility.category}</span>`
+    tbody.innerHTML = filteredHospitals.map(hospital => {
+        const categoryBadge = hospital.departments 
+            ? `<span class="status-badge bg-blue-100 text-blue-800">${hospital.departments}</span>`
             : '<span class="text-gray-400">-</span>';
         
-        const formattedDate = new Date(facility.created_at).toLocaleString('ja-JP', {
+        const formattedDate = new Date(hospital.created_at).toLocaleString('ja-JP', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -121,34 +121,34 @@ function displayFacilities() {
         
         return `
             <tr class="table-row">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#${facility.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#${hospital.id}</td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
-                        ${facility.image_url ? `<img src="${facility.image_url}" alt="${facility.name}" class="w-16 h-16 object-cover rounded">` : '<div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center"><i class="fas fa-image text-gray-400"></i></div>'}
+                        ${hospital.image_url ? `<img src="${hospital.image_url}" alt="${hospital.name}" class="w-16 h-16 object-cover rounded">` : '<div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center"><i class="fas fa-image text-gray-400"></i></div>'}
                         <div>
-                            <div class="text-sm font-medium text-gray-900">${facility.name}</div>
-                            ${facility.description ? `<div class="text-xs text-gray-500 truncate max-w-xs">${facility.description}</div>` : ''}
+                            <div class="text-sm font-medium text-gray-900">${hospital.name}</div>
+                            ${hospital.description ? `<div class="text-xs text-gray-500 truncate max-w-xs">${hospital.description}</div>` : ''}
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">${categoryBadge}</td>
                 <td class="px-6 py-4 text-sm text-gray-900">
-                    ${facility.address ? `<div class="max-w-xs truncate">${facility.address}</div>` : '<span class="text-gray-400">-</span>'}
+                    ${hospital.address ? `<div class="max-w-xs truncate">${hospital.address}</div>` : '<span class="text-gray-400">-</span>'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${facility.phone || '<span class="text-gray-400">-</span>'}
+                    ${hospital.phone || '<span class="text-gray-400">-</span>'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onclick="viewOnMap(${facility.latitude}, ${facility.longitude})" 
+                    <button onclick="viewOnMap(${hospital.latitude}, ${hospital.longitude})" 
                             class="text-green-600 hover:text-green-900 mr-3" title="地図で表示">
                         <i class="fas fa-map-marker-alt"></i>
                     </button>
-                    <button onclick="editFacility(${facility.id})" 
+                    <button onclick="editFacility(${hospital.id})" 
                             class="text-blue-600 hover:text-blue-900 mr-3" title="編集">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteFacility(${facility.id})" 
+                    <button onclick="deleteHospital(${hospital.id})" 
                             class="text-red-600 hover:text-red-900" title="削除">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -159,11 +159,11 @@ function displayFacilities() {
 }
 
 // Update statistics
-function updateStats() {
-    const totalCount = allFacilities.length;
-    const tourismCount = allFacilities.filter(f => f.category === '観光').length;
-    const restaurantCount = allFacilities.filter(f => f.category === '飲食').length;
-    const otherCount = allFacilities.filter(f => !f.category || 
+function updateHospitalStats() {
+    const totalCount = allHospitals.length;
+    const tourismCount = allHospitals.filter(f => f.category === '観光').length;
+    const restaurantCount = allHospitals.filter(f => f.category === '飲食').length;
+    const otherCount = allHospitals.filter(f => !f.category || 
         !['観光', '飲食'].includes(f.category)).length;
     
     document.getElementById('total-count').textContent = totalCount;
@@ -188,15 +188,15 @@ function handleImageSelection(e) {
 
 // Remove image
 function removeImage() {
-    document.getElementById('facility-image').value = '';
-    document.getElementById('facility-image-url').value = '';
+    document.getElementById('hospital-image').value = '';
+    document.getElementById('hospital-image-url').value = '';
     document.getElementById('image-preview').classList.add('hidden');
 }
 
 // Show add modal
-function showAddModal() {
-    const modal = document.getElementById('facility-modal');
-    const form = document.getElementById('facility-form');
+function showAddHospitalModal() {
+    const modal = document.getElementById('hospital-modal');
+    const form = document.getElementById('hospital-form');
     const modalTitle = document.getElementById('modal-title');
     
     form.reset();
@@ -204,51 +204,51 @@ function showAddModal() {
     
     // Reset image preview
     document.getElementById('image-preview').classList.add('hidden');
-    document.getElementById('facility-image-url').value = '';
+    document.getElementById('hospital-image-url').value = '';
     
     // Clear coordinates (no default values)
-    document.getElementById('facility-lat').value = '';
-    document.getElementById('facility-lng').value = '';
+    document.getElementById('hospital-lat').value = '';
+    document.getElementById('hospital-lng').value = '';
     
     modal.classList.remove('hidden');
 }
 
 // Close modal
 function closeModal() {
-    const modal = document.getElementById('facility-modal');
+    const modal = document.getElementById('hospital-modal');
     modal.classList.add('hidden');
 }
 
 // Edit facility
-async function editFacility(facilityId) {
+async function editFacility(hospitalId) {
     try {
-        const response = await axios.get(`/api/facilities/${facilityId}`);
+        const response = await axios.get(`/api/hospitals/${facilityId}`);
         
         if (response.data.success) {
-            const facility = response.data.data;
-            const modal = document.getElementById('facility-modal');
+            const hospital = response.data.data;
+            const modal = document.getElementById('hospital-modal');
             const modalTitle = document.getElementById('modal-title');
             
             modalTitle.textContent = '施設情報編集';
             
-            document.getElementById('facility-id').value = facility.id;
-            document.getElementById('facility-name').value = facility.name;
-            document.getElementById('facility-category').value = facility.category || '';
-            document.getElementById('facility-description').value = facility.description || '';
-            document.getElementById('facility-address').value = facility.address || '';
-            document.getElementById('facility-phone').value = facility.phone || '';
-            document.getElementById('facility-website').value = facility.website || '';
-            document.getElementById('facility-lat').value = facility.latitude || '';
-            document.getElementById('facility-lng').value = facility.longitude || '';
+            document.getElementById('hospital-id').value = hospital.id;
+            document.getElementById('hospital-name').value = hospital.name;
+            document.getElementById('hospital-departments').value = hospital.departments || '';
+            document.getElementById('hospital-description').value = hospital.description || '';
+            document.getElementById('hospital-address').value = hospital.address || '';
+            document.getElementById('hospital-phone').value = hospital.phone || '';
+            document.getElementById('hospital-website').value = hospital.website || '';
+            document.getElementById('hospital-lat').value = hospital.latitude || '';
+            document.getElementById('hospital-lng').value = hospital.longitude || '';
             
             // Reset image preview
             document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('facility-image-url').value = '';
+            document.getElementById('hospital-image-url').value = '';
             
             // Show existing image if available
-            if (facility.image_url) {
-                document.getElementById('facility-image-url').value = facility.image_url;
-                document.getElementById('preview-img').src = facility.image_url;
+            if (hospital.image_url) {
+                document.getElementById('hospital-image-url').value = hospital.image_url;
+                document.getElementById('preview-img').src = hospital.image_url;
                 document.getElementById('image-preview').classList.remove('hidden');
             }
             
@@ -261,17 +261,17 @@ async function editFacility(facilityId) {
 }
 
 // Delete facility
-async function deleteFacility(facilityId) {
+async function deleteHospital(hospitalId) {
     if (!confirm('この施設を削除してもよろしいですか？\nこの操作は取り消せません。')) {
         return;
     }
     
     try {
-        const response = await axios.delete(`/api/facilities/${facilityId}`);
+        const response = await axios.delete(`/api/hospitals/${facilityId}`);
         
         if (response.data.success) {
             showNotification('施設を削除しました', 'success');
-            await loadFacilities();
+            await loadHospitals();
         }
     } catch (error) {
         console.error('Error deleting facility:', error);
@@ -285,9 +285,9 @@ async function handleFormSubmit(e) {
     
     console.log('Form submitted');
     
-    const facilityId = document.getElementById('facility-id').value;
-    const imageFile = document.getElementById('facility-image').files[0];
-    let imageUrl = document.getElementById('facility-image-url').value;
+    const facilityId = document.getElementById('hospital-id').value;
+    const imageFile = document.getElementById('hospital-image').files[0];
+    let imageUrl = document.getElementById('hospital-image-url').value;
     
     console.log('Facility ID:', facilityId);
     console.log('Image file:', imageFile);
@@ -309,30 +309,30 @@ async function handleFormSubmit(e) {
             }
         }
         
-        const facilityData = {
-            name: document.getElementById('facility-name').value,
-            category: document.getElementById('facility-category').value,
-            description: document.getElementById('facility-description').value,
-            address: document.getElementById('facility-address').value,
-            phone: document.getElementById('facility-phone').value,
-            website: document.getElementById('facility-website').value,
-            latitude: parseFloat(document.getElementById('facility-lat').value),
-            longitude: parseFloat(document.getElementById('facility-lng').value),
+        const hospitalData = {
+            name: document.getElementById('hospital-name').value,
+            category: document.getElementById('hospital-departments').value,
+            description: document.getElementById('hospital-description').value,
+            address: document.getElementById('hospital-address').value,
+            phone: document.getElementById('hospital-phone').value,
+            website: document.getElementById('hospital-website').value,
+            latitude: parseFloat(document.getElementById('hospital-lat').value),
+            longitude: parseFloat(document.getElementById('hospital-lng').value),
             image_url: imageUrl || null
         };
         
-        console.log('Facility data:', facilityData);
+        console.log('Facility data:', hospitalData);
         
         let response;
-        if (facilityId) {
+        if (hospitalId) {
             // Update existing facility
-            console.log('Updating facility...');
-            response = await axios.put(`/api/facilities/${facilityId}`, facilityData);
+            console.log('Updating hospital...');
+            response = await axios.put(`/api/hospitals/${facilityId}`, hospitalData);
             showNotification('施設情報を更新しました', 'success');
         } else {
             // Create new facility
-            console.log('Creating new facility...');
-            response = await axios.post('/api/facilities', facilityData);
+            console.log('Creating new hospital...');
+            response = await axios.post('/api/hospitals', hospitalData);
             showNotification('施設を登録しました', 'success');
         }
         
@@ -340,7 +340,7 @@ async function handleFormSubmit(e) {
         
         if (response.data.success) {
             closeModal();
-            await loadFacilities();
+            await loadHospitals();
         }
     } catch (error) {
         console.error('Error saving facility:', error);
@@ -622,20 +622,20 @@ async function geocodeAddresses(facilities) {
     let failCount = 0;
     
     for (let i = 0; i < facilities.length; i++) {
-        const facility = facilities[i];
+        const hospital = facilities[i];
         
         // If coordinates already exist, skip geocoding
-        if (facility.latitude && facility.longitude) {
-            results.push(facility);
+        if (hospital.latitude && hospital.longitude) {
+            results.push(hospital);
             continue;
         }
         
         // If address exists but no coordinates, try geocoding
-        if (facility.address) {
+        if (hospital.address) {
             try {
-                const coords = await geocodeSingleAddress(facility.address);
+                const coords = await geocodeSingleAddress(hospital.address);
                 results.push({
-                    ...facility,
+                    ...hospital,
                     latitude: coords.lat,
                     longitude: coords.lng
                 });
@@ -652,12 +652,12 @@ async function geocodeAddresses(facilities) {
                 }
             } catch (error) {
                 console.error('Geocoding error:', error);
-                results.push(facility);
+                results.push(hospital);
                 failCount++;
             }
         } else {
             // No address, keep as is
-            results.push(facility);
+            results.push(hospital);
         }
     }
     
@@ -696,7 +696,7 @@ async function executeImport() {
         `;
         
         // Then, import the facilities with coordinates
-        const response = await axios.post('/api/facilities/import', {
+        const response = await axios.post('/api/hospitals/import', {
             facilities: results
         });
         
@@ -707,7 +707,7 @@ async function executeImport() {
             }
             showNotification('success', message);
             closeImportModal();
-            await loadFacilities();
+            await loadHospitals();
         } else {
             throw new Error(response.data.error);
         }
@@ -720,7 +720,7 @@ async function executeImport() {
 
 // Geocode address to get coordinates (for admin page)
 async function geocodeAddress() {
-    const addressInput = document.getElementById('facility-address');
+    const addressInput = document.getElementById('hospital-address');
     const address = addressInput.value.trim();
     
     if (!address) {
@@ -739,8 +739,8 @@ async function geocodeAddress() {
                 const lng = location.lng();
                 
                 // Set coordinates
-                document.getElementById('facility-lat').value = lat;
-                document.getElementById('facility-lng').value = lng;
+                document.getElementById('hospital-lat').value = lat;
+                document.getElementById('hospital-lng').value = lng;
                 
                 showNotification('success', `座標を取得しました！ 緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}`);
             } else {
@@ -763,10 +763,10 @@ async function geocodeAddress() {
 }
 
 // Make functions available globally
-window.showAddModal = showAddModal;
+window.showAddHospitalModal = showAddHospitalModal;
 window.closeModal = closeModal;
 window.editFacility = editFacility;
-window.deleteFacility = deleteFacility;
+window.deleteHospital = deleteHospital;
 window.viewOnMap = viewOnMap;
 window.applyFilters = applyFilters;
 window.removeImage = removeImage;

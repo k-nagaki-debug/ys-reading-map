@@ -56,7 +56,7 @@ app.post('/api/auth/login', async (c) => {
     const { username, password } = await c.req.json()
     
     const adminUsername = c.env.ADMIN_USERNAME || 'admin'
-    const adminPassword = c.env.ADMIN_PASSWORD || 'higo2025'
+    const adminPassword = c.env.ADMIN_PASSWORD || 'hospital2025'
     
     if (username === adminUsername && password === adminPassword) {
       setCookie(c, 'session_token', 'authenticated', {
@@ -82,38 +82,38 @@ app.post('/api/auth/logout', (c) => {
   return c.json({ success: true, message: 'ログアウトしました' })
 })
 
-// API Routes for Facilities
+// API Routes for Hospitals
 
-// Get all facilities
-app.get('/api/facilities', async (c) => {
+// Get all hospitals
+app.get('/api/hospitals', async (c) => {
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM facilities ORDER BY created_at DESC'
+      'SELECT * FROM hospitals ORDER BY created_at DESC'
     ).all()
     
     return c.json({ success: true, data: results })
   } catch (error) {
-    console.error('Error fetching facilities:', error);
-    return c.json({ success: false, error: 'Failed to fetch facilities' }, 500)
+    console.error('Error fetching hospitals:', error);
+    return c.json({ success: false, error: 'Failed to fetch hospitals' }, 500)
   }
 })
 
-// Get single facility by ID
-app.get('/api/facilities/:id', async (c) => {
+// Get single hospital by ID
+app.get('/api/hospitals/:id', async (c) => {
   const id = c.req.param('id')
   
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM facilities WHERE id = ?'
+      'SELECT * FROM hospitals WHERE id = ?'
     ).bind(id).all()
     
     if (results.length === 0) {
-      return c.json({ success: false, error: 'Facility not found' }, 404)
+      return c.json({ success: false, error: 'Hospital not found' }, 404)
     }
     
     return c.json({ success: true, data: results[0] })
   } catch (error) {
-    return c.json({ success: false, error: 'Failed to fetch facility' }, 500)
+    return c.json({ success: false, error: 'Failed to fetch hospital' }, 500)
   }
 })
 
@@ -185,112 +185,116 @@ app.get('/api/images/:filename', async (c) => {
   }
 })
 
-// Create new facility
-app.post('/api/facilities', async (c) => {
+// Create new hospital
+app.post('/api/hospitals', async (c) => {
   try {
     const body = await c.req.json()
-    const { name, description, category, latitude, longitude, address, phone, website, image_url } = body
+    const { name, description, departments, latitude, longitude, address, phone, website, image_url, business_hours, closed_days, parking, emergency } = body
     
     if (!name) {
       return c.json({ success: false, error: 'Name is required' }, 400)
     }
     
     const result = await c.env.DB.prepare(
-      `INSERT INTO facilities (name, description, category, latitude, longitude, address, phone, website, image_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(name, description || null, category || null, latitude, longitude, address || null, phone || null, website || null, image_url || null).run()
+      `INSERT INTO hospitals (name, description, departments, latitude, longitude, address, phone, website, image_url, business_hours, closed_days, parking, emergency)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(name, description || null, departments || null, latitude, longitude, address || null, phone || null, website || null, image_url || null, business_hours || null, closed_days || null, parking || null, emergency || 0).run()
     
     return c.json({ 
       success: true, 
       data: { id: result.meta.last_row_id, name, latitude, longitude }
     }, 201)
   } catch (error) {
-    console.error('Error creating facility:', error)
-    return c.json({ success: false, error: 'Failed to create facility', details: error.message }, 500)
+    console.error('Error creating hospital:', error)
+    return c.json({ success: false, error: 'Failed to create hospital', details: error.message }, 500)
   }
 })
 
-// Update facility
-app.put('/api/facilities/:id', async (c) => {
+// Update hospital
+app.put('/api/hospitals/:id', async (c) => {
   const id = c.req.param('id')
   
   try {
     const body = await c.req.json()
-    const { name, description, category, latitude, longitude, address, phone, website, image_url } = body
+    const { name, description, departments, latitude, longitude, address, phone, website, image_url, business_hours, closed_days, parking, emergency } = body
     
     const result = await c.env.DB.prepare(
-      `UPDATE facilities 
-       SET name = ?, description = ?, category = ?, latitude = ?, longitude = ?, 
-           address = ?, phone = ?, website = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
+      `UPDATE hospitals 
+       SET name = ?, description = ?, departments = ?, latitude = ?, longitude = ?, 
+           address = ?, phone = ?, website = ?, image_url = ?, business_hours = ?, closed_days = ?, parking = ?, emergency = ?, updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`
-    ).bind(name, description || null, category || null, latitude, longitude, address || null, phone || null, website || null, image_url || null, id).run()
+    ).bind(name, description || null, departments || null, latitude, longitude, address || null, phone || null, website || null, image_url || null, business_hours || null, closed_days || null, parking || null, emergency || 0, id).run()
     
     if (result.meta.changes === 0) {
-      return c.json({ success: false, error: 'Facility not found' }, 404)
+      return c.json({ success: false, error: 'Hospital not found' }, 404)
     }
     
     return c.json({ success: true, data: { id } })
   } catch (error) {
-    return c.json({ success: false, error: 'Failed to update facility' }, 500)
+    return c.json({ success: false, error: 'Failed to update hospital' }, 500)
   }
 })
 
-// Delete facility
-app.delete('/api/facilities/:id', async (c) => {
+// Delete hospital
+app.delete('/api/hospitals/:id', async (c) => {
   const id = c.req.param('id')
   
   try {
     const result = await c.env.DB.prepare(
-      'DELETE FROM facilities WHERE id = ?'
+      'DELETE FROM hospitals WHERE id = ?'
     ).bind(id).run()
     
     if (result.meta.changes === 0) {
-      return c.json({ success: false, error: 'Facility not found' }, 404)
+      return c.json({ success: false, error: 'Hospital not found' }, 404)
     }
     
-    return c.json({ success: true, message: 'Facility deleted' })
+    return c.json({ success: true, message: 'Hospital deleted' })
   } catch (error) {
-    return c.json({ success: false, error: 'Failed to delete facility' }, 500)
+    return c.json({ success: false, error: 'Failed to delete hospital' }, 500)
   }
 })
 
-// Bulk import facilities from CSV/Excel
-app.post('/api/facilities/import', async (c) => {
+// Bulk import hospitals from CSV/Excel
+app.post('/api/hospitals/import', async (c) => {
   try {
-    const { facilities } = await c.req.json()
+    const { hospitals } = await c.req.json()
     
-    if (!Array.isArray(facilities) || facilities.length === 0) {
-      return c.json({ success: false, error: 'No facilities data provided' }, 400)
+    if (!Array.isArray(hospitals) || hospitals.length === 0) {
+      return c.json({ success: false, error: 'No hospitals data provided' }, 400)
     }
     
     let successCount = 0
     let errorCount = 0
     const errors: any[] = []
     
-    for (let i = 0; i < facilities.length; i++) {
-      const facility = facilities[i]
+    for (let i = 0; i < hospitals.length; i++) {
+      const hospital = hospitals[i]
       
       // Validate required fields
-      if (!facility.name || !facility.latitude || !facility.longitude) {
+      if (!hospital.name) {
         errorCount++
-        errors.push({ row: i + 1, error: '必須項目（名前、緯度、経度）が不足しています' })
+        errors.push({ row: i + 1, error: '必須項目（名前）が不足しています' })
         continue
       }
       
       try {
         await c.env.DB.prepare(
-          `INSERT INTO facilities (name, description, category, latitude, longitude, address, phone, website, image_url)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO hospitals (name, description, departments, latitude, longitude, address, phone, website, image_url, business_hours, closed_days, parking, emergency)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
-          facility.name,
-          facility.description || null,
-          facility.category || null,
-          parseFloat(facility.latitude),
-          parseFloat(facility.longitude),
-          facility.address || null,
-          facility.phone || null,
-          facility.website || null,
-          facility.image_url || null
+          hospital.name,
+          hospital.description || null,
+          hospital.departments || null,
+          hospital.latitude ? parseFloat(hospital.latitude) : null,
+          hospital.longitude ? parseFloat(hospital.longitude) : null,
+          hospital.address || null,
+          hospital.phone || null,
+          hospital.website || null,
+          hospital.image_url || null,
+          hospital.business_hours || null,
+          hospital.closed_days || null,
+          hospital.parking || null,
+          hospital.emergency || 0
         ).run()
         
         successCount++
@@ -321,7 +325,7 @@ app.get('/admin', requireAuth, (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>肥後ジャーナルマップ管理画面 - Admin Dashboard</title>
+        <title>全国病院マップ管理画面 - Hospital Map Admin</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -342,8 +346,8 @@ app.get('/admin', requireAuth, (c) => {
             <div class="container mx-auto px-4 py-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-12 mb-1">
-                        <p class="text-sm text-gray-600 mt-1">Facility Management Dashboard</p>
+                        <h1 class="text-2xl font-bold text-blue-600 mb-1">🏥 全国病院マップ</h1>
+                        <p class="text-sm text-gray-600 mt-1">Hospital Management Dashboard</p>
                     </div>
                     <div class="flex gap-3 items-center">
                         <a href="/edit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
@@ -373,44 +377,44 @@ app.get('/admin', requireAuth, (c) => {
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-600 text-sm">総施設数</p>
+                            <p class="text-gray-600 text-sm">総病院数</p>
                             <p id="total-count" class="text-3xl font-bold text-gray-800">0</p>
                         </div>
                         <div class="bg-blue-100 p-3 rounded-full">
-                            <i class="fas fa-map-marker-alt text-blue-600 text-xl"></i>
+                            <i class="fas fa-hospital text-blue-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-600 text-sm">観光施設</p>
-                            <p id="tourism-count" class="text-3xl font-bold text-gray-800">0</p>
+                            <p class="text-gray-600 text-sm">内科</p>
+                            <p id="internal-count" class="text-3xl font-bold text-gray-800">0</p>
                         </div>
                         <div class="bg-green-100 p-3 rounded-full">
-                            <i class="fas fa-camera text-green-600 text-xl"></i>
+                            <i class="fas fa-stethoscope text-green-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-600 text-sm">飲食店</p>
-                            <p id="restaurant-count" class="text-3xl font-bold text-gray-800">0</p>
+                            <p class="text-gray-600 text-sm">小児科</p>
+                            <p id="pediatric-count" class="text-3xl font-bold text-gray-800">0</p>
                         </div>
                         <div class="bg-yellow-100 p-3 rounded-full">
-                            <i class="fas fa-utensils text-yellow-600 text-xl"></i>
+                            <i class="fas fa-baby text-yellow-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-600 text-sm">その他</p>
-                            <p id="other-count" class="text-3xl font-bold text-gray-800">0</p>
+                            <p class="text-gray-600 text-sm">救急対応</p>
+                            <p id="emergency-count" class="text-3xl font-bold text-gray-800">0</p>
                         </div>
-                        <div class="bg-purple-100 p-3 rounded-full">
-                            <i class="fas fa-ellipsis-h text-purple-600 text-xl"></i>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-ambulance text-red-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -425,17 +429,20 @@ app.get('/admin', requireAuth, (c) => {
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">カテゴリ</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">診療科目</label>
                         <select id="category-filter" 
                                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">すべて</option>
-                            <option value="観光">観光</option>
-                            <option value="飲食">飲食</option>
-                            <option value="宿泊">宿泊</option>
-                            <option value="ショッピング">ショッピング</option>
-                            <option value="寺社">寺社</option>
-                            <option value="公園">公園</option>
-                            <option value="その他">その他</option>
+                            <option value="内科">内科</option>
+                            <option value="外科">外科</option>
+                            <option value="小児科">小児科</option>
+                            <option value="整形外科">整形外科</option>
+                            <option value="皮膚科">皮膚科</option>
+                            <option value="眼科">眼科</option>
+                            <option value="耳鼻科">耳鼻科</option>
+                            <option value="産婦人科">産婦人科</option>
+                            <option value="歯科">歯科</option>
+                            <option value="救急科">救急科</option>
                         </select>
                     </div>
                     <div>
@@ -466,22 +473,22 @@ app.get('/admin', requireAuth, (c) => {
                         <thead class="bg-gray-100 border-b">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">施設名</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">カテゴリ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">病院名</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">診療科目</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">住所</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">電話番号</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">作成日時</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">救急</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">操作</th>
                             </tr>
                         </thead>
-                        <tbody id="facilities-table-body" class="divide-y divide-gray-200">
+                        <tbody id="hospitals-table-body" class="divide-y divide-gray-200">
                             <!-- Data will be loaded here -->
                         </tbody>
                     </table>
                 </div>
                 <div id="no-data" class="hidden text-center py-12 text-gray-500">
                     <i class="fas fa-inbox text-4xl mb-4"></i>
-                    <p>施設が登録されていません</p>
+                    <p>病院が登録されていません</p>
                 </div>
             </div>
         </main>
@@ -489,49 +496,41 @@ app.get('/admin', requireAuth, (c) => {
         <!-- Add/Edit Modal -->
         <div id="facility-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">新規施設登録</h3>
-                <form id="facility-form">
-                    <input type="hidden" id="facility-id">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">新規病院登録</h3>
+                <form id="hospital-form">
+                    <input type="hidden" id="hospital-id">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="md:col-span-2">
-                            <label class="block text-gray-700 font-bold mb-2">施設名 *</label>
-                            <input type="text" id="facility-name" required 
+                            <label class="block text-gray-700 font-bold mb-2">病院名 *</label>
+                            <input type="text" id="hospital-name" required 
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         
                         <div>
-                            <label class="block text-gray-700 font-bold mb-2">カテゴリ</label>
-                            <select id="facility-category" 
+                            <label class="block text-gray-700 font-bold mb-2">診療科目</label>
+                            <input type="text" id="hospital-departments" placeholder="例: 内科,外科,小児科"
                                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">選択してください</option>
-                                <option value="観光">観光</option>
-                                <option value="飲食">飲食</option>
-                                <option value="宿泊">宿泊</option>
-                                <option value="ショッピング">ショッピング</option>
-                                <option value="寺社">寺社</option>
-                                <option value="公園">公園</option>
-                                <option value="その他">その他</option>
-                            </select>
+                            <p class="text-xs text-gray-500 mt-1">カンマ区切りで入力してください</p>
                         </div>
                         
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">電話番号</label>
-                            <input type="tel" id="facility-phone"
+                            <input type="tel" id="hospital-phone"
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">説明</label>
-                        <textarea id="facility-description" rows="3"
+                        <textarea id="hospital-description" rows="3"
                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">住所</label>
                         <div class="flex gap-2">
-                            <input type="text" id="facility-address"
+                            <input type="text" id="hospital-address"
                                    class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <button type="button" onclick="geocodeAddress()" 
                                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition whitespace-nowrap">
@@ -541,31 +540,57 @@ app.get('/admin', requireAuth, (c) => {
                         <p class="text-xs text-gray-500 mt-1">住所を入力して「座標取得」ボタンを押すと、自動的に緯度・経度が入力されます</p>
                     </div>
                     
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">診療時間</label>
+                            <input type="text" id="hospital-business-hours" placeholder="例: 平日 9:00-17:00"
+                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">休診日</label>
+                            <input type="text" id="hospital-closed-days" placeholder="例: 土日祝"
+                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2">記事リンク</label>
-                        <input type="url" id="facility-website"
+                        <label class="block text-gray-700 font-bold mb-2">駐車場</label>
+                        <input type="text" id="hospital-parking" placeholder="例: あり（50台）"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="hospital-emergency" class="mr-2">
+                            <span class="text-gray-700 font-bold">救急対応可能</span>
+                        </label>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-bold mb-2">ウェブサイト</label>
+                        <input type="url" id="hospital-website"
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">緯度</label>
-                            <input type="number" step="any" id="facility-lat" placeholder="例: 32.7898"
+                            <input type="number" step="any" id="hospital-lat" placeholder="例: 35.6812"
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">経度</label>
-                            <input type="number" step="any" id="facility-lng" placeholder="例: 130.7417"
+                            <input type="number" step="any" id="hospital-lng" placeholder="例: 139.7671"
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                     
                     <div class="mb-6">
-                        <label class="block text-gray-700 font-bold mb-2">施設画像</label>
-                        <input type="file" id="facility-image" accept="image/*"
+                        <label class="block text-gray-700 font-bold mb-2">病院画像</label>
+                        <input type="file" id="hospital-image" accept="image/*"
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF形式（最大5MB）</p>
-                        <input type="hidden" id="facility-image-url">
+                        <input type="hidden" id="hospital-image-url">
                         <div id="image-preview" class="mt-2 hidden">
                             <img id="preview-img" src="" alt="Preview" class="max-w-full h-32 object-cover rounded">
                             <button type="button" onclick="removeImage()" class="text-red-600 text-sm mt-1 hover:underline">
@@ -595,7 +620,7 @@ app.get('/admin', requireAuth, (c) => {
             <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <h3 class="text-2xl font-bold text-gray-800 mb-4">
                     <i class="fas fa-file-excel mr-2 text-green-600"></i>
-                    施設データインポート
+                    病院データインポート
                 </h3>
                 
                 <!-- Step 1: File Upload -->
@@ -607,8 +632,8 @@ app.get('/admin', requireAuth, (c) => {
                         </h4>
                         <ul class="text-sm text-blue-700 space-y-1">
                             <li>• CSV形式（.csv）またはExcel形式（.xlsx）</li>
-                            <li>• 必須列: name（施設名）, latitude（緯度）, longitude（経度）</li>
-                            <li>• オプション列: description, category, address, phone, website</li>
+                            <li>• 必須列: name（病院名）</li>
+                            <li>• オプション列: description, departments, latitude, longitude, address, phone, website, business_hours, closed_days, parking, emergency</li>
                             <li>• 1行目は列名として扱われます</li>
                         </ul>
                     </div>
@@ -648,8 +673,8 @@ app.get('/admin', requireAuth, (c) => {
                             <thead class="bg-gray-100 sticky top-0">
                                 <tr>
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">#</th>
-                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">施設名</th>
-                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">カテゴリ</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">病院名</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">診療科目</th>
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">座標状態</th>
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">住所</th>
                                 </tr>
@@ -726,7 +751,7 @@ app.get('/login', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ログイン - 肥後ジャーナルマップ</title>
+        <title>ログイン - 全国病院マップ</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
@@ -735,7 +760,7 @@ app.get('/login', (c) => {
             <div class="max-w-md mx-auto">
                 <!-- Logo and Title -->
                 <div class="text-center mb-8">
-                    <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-20 mx-auto mb-4">
+                    <h1 class="text-4xl font-bold text-blue-600 mb-2">🏥 全国病院マップ</h1>
                     <p class="text-gray-600">管理者ログイン</p>
                 </div>
 
@@ -786,7 +811,7 @@ app.get('/login', (c) => {
                 <div class="mt-6 text-center text-sm text-gray-600">
                     <p>デフォルト認証情報:</p>
                     <p class="font-mono bg-white px-3 py-2 rounded mt-2">
-                        ユーザー名: admin / パスワード: higo2025
+                        ユーザー名: admin / パスワード: hospital2025
                     </p>
                 </div>
             </div>
@@ -832,7 +857,7 @@ app.get('/', (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>肥後ジャーナルマップ（閲覧専用） - Higo Journal Map</title>
+        <title>全国病院マップ（閲覧専用） - Japan Hospital Map</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -861,7 +886,8 @@ app.get('/', (c) => {
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8 flex justify-between items-center">
                 <div>
-                    <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-16">
+                    <h1 class="text-4xl font-bold text-blue-600">🏥 全国病院マップ</h1>
+                    <p class="text-gray-600 mt-1">Japan Hospital Map</p>
                 </div>
                 <div id="header-buttons">
                     <!-- Login link will be shown here for non-authenticated users -->
@@ -903,8 +929,8 @@ app.get('/', (c) => {
                     </div>
                 </div>
                 
-                <div id="facility-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Facilities will be loaded here -->
+                <div id="hospital-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Hospitals will be loaded here -->
                 </div>
             </div>
         </div>
@@ -972,7 +998,7 @@ app.get('/edit', requireAuth, (c) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>肥後ジャーナルマップ - Higo Journal Map</title>
+        <title>全国病院マップ - Japan Hospital Map</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
@@ -1009,10 +1035,11 @@ app.get('/edit', requireAuth, (c) => {
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8 flex justify-between items-center">
                 <div>
-                    <img src="/static/logo.png" alt="肥後ジャーナルマップ" class="h-16 mb-2">
+                    <h1 class="text-4xl font-bold text-blue-600 mb-1">🏥 全国病院マップ</h1>
+                    <p class="text-gray-600">Japan Hospital Map - 編集モード</p>
                 </div>
                 <div class="flex gap-3 items-center">
-                    <button onclick="showNewFacilityForm()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
+                    <button onclick="showNewHospitalForm()" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
                         <i class="fas fa-plus"></i>
                         新規作成
                     </button>
@@ -1061,50 +1088,42 @@ app.get('/edit', requireAuth, (c) => {
                     </div>
                 </div>
                 
-                <div id="facility-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Facilities will be loaded here -->
+                <div id="hospital-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Hospitals will be loaded here -->
                 </div>
             </div>
         </div>
 
-        <!-- Facility Form Modal -->
-        <div id="facility-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto py-8" style="z-index: 9999;">
+        <!-- Hospital Form Modal -->
+        <div id="hospital-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto py-8" style="z-index: 9999;">
             <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 my-auto max-h-[90vh] overflow-y-auto">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">新規施設登録</h3>
-                <form id="facility-form">
-                    <input type="hidden" id="facility-id">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">新規病院登録</h3>
+                <form id="hospital-form">
+                    <input type="hidden" id="hospital-id">
                     
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2">施設名 *</label>
-                        <input type="text" id="facility-name" required 
+                        <label class="block text-gray-700 font-bold mb-2">病院名 *</label>
+                        <input type="text" id="hospital-name" required 
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2">カテゴリ</label>
-                        <select id="facility-category" 
+                        <label class="block text-gray-700 font-bold mb-2">診療科目</label>
+                        <input type="text" id="hospital-departments" placeholder="例: 内科,外科,小児科"
                                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">選択してください</option>
-                            <option value="観光">観光</option>
-                            <option value="飲食">飲食</option>
-                            <option value="宿泊">宿泊</option>
-                            <option value="ショッピング">ショッピング</option>
-                            <option value="寺社">寺社</option>
-                            <option value="公園">公園</option>
-                            <option value="その他">その他</option>
-                        </select>
+                        <p class="text-xs text-gray-500 mt-1">カンマ区切りで入力してください</p>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">説明</label>
-                        <textarea id="facility-description" rows="3"
+                        <textarea id="hospital-description" rows="3"
                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">住所</label>
                         <div class="flex gap-2">
-                            <input type="text" id="facility-address"
+                            <input type="text" id="hospital-address"
                                    class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <button type="button" onclick="geocodeAddress()" 
                                     class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition whitespace-nowrap">
@@ -1116,35 +1135,60 @@ app.get('/edit', requireAuth, (c) => {
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2">電話番号</label>
-                        <input type="tel" id="facility-phone"
+                        <input type="tel" id="hospital-phone"
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-bold mb-2">記事リンク</label>
-                        <input type="url" id="facility-website"
+                        <label class="block text-gray-700 font-bold mb-2">診療時間</label>
+                        <input type="text" id="hospital-business-hours" placeholder="例: 平日 9:00-17:00"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-bold mb-2">休診日</label>
+                        <input type="text" id="hospital-closed-days" placeholder="例: 土日祝"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-bold mb-2">駐車場</label>
+                        <input type="text" id="hospital-parking" placeholder="例: あり（50台）"
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="hospital-emergency" class="mr-2">
+                            <span class="text-gray-700 font-bold">救急対応可能</span>
+                        </label>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-bold mb-2">ウェブサイト</label>
+                        <input type="url" id="hospital-website"
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">緯度</label>
-                            <input type="number" step="any" id="facility-lat" placeholder="例: 32.7898"
+                            <input type="number" step="any" id="hospital-lat" placeholder="例: 35.6812"
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-bold mb-2">経度</label>
-                            <input type="number" step="any" id="facility-lng" placeholder="例: 130.7417"
+                            <input type="number" step="any" id="hospital-lng" placeholder="例: 139.7671"
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                     
                     <div class="mb-6">
-                        <label class="block text-gray-700 font-bold mb-2">施設画像</label>
-                        <input type="file" id="facility-image" accept="image/*"
+                        <label class="block text-gray-700 font-bold mb-2">病院画像</label>
+                        <input type="file" id="hospital-image" accept="image/*"
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF形式（最大5MB）</p>
-                        <input type="hidden" id="facility-image-url">
+                        <input type="hidden" id="hospital-image-url">
                         <div id="image-preview" class="mt-2 hidden">
                             <img id="preview-img" src="" alt="Preview" class="max-w-full h-32 object-cover rounded">
                             <button type="button" onclick="removeImage()" class="text-red-600 text-sm mt-1 hover:underline">

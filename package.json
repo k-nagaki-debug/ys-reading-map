@@ -12,7 +12,7 @@
     "db:seed": "wrangler d1 execute webapp-production --local --file=./seed.sql",
     "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate:local && npm run db:seed",
     "db:backup": "mkdir -p backups && ./scripts/backup-local-db.sh",
-    "db:export": "wrangler d1 execute webapp-production --local --command='SELECT * FROM facilities;' > backups/facilities_export_$(date +%Y%m%d_%H%M%S).json",
+    "db:export": "wrangler d1 execute webapp-production --local --command='SELECT * FROM hospitals;' > backups/hospitals_export_$(date +%Y%m%d_%H%M%S).json",
     "clean-port": "fuser -k 3000/tcp 2>/dev/null || true",
     "test": "curl http://localhost:3000"
   },
