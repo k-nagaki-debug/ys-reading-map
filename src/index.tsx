@@ -253,6 +253,65 @@ app.delete('/api/facilities/:id', async (c) => {
   }
 })
 
+// Bulk import facilities from CSV/Excel
+app.post('/api/facilities/import', async (c) => {
+  try {
+    const { facilities } = await c.req.json()
+    
+    if (!Array.isArray(facilities) || facilities.length === 0) {
+      return c.json({ success: false, error: 'No facilities data provided' }, 400)
+    }
+    
+    let successCount = 0
+    let errorCount = 0
+    const errors: any[] = []
+    
+    for (let i = 0; i < facilities.length; i++) {
+      const facility = facilities[i]
+      
+      // Validate required fields
+      if (!facility.name || !facility.latitude || !facility.longitude) {
+        errorCount++
+        errors.push({ row: i + 1, error: '必須項目（名前、緯度、経度）が不足しています' })
+        continue
+      }
+      
+      try {
+        await c.env.DB.prepare(
+          `INSERT INTO facilities (name, description, category, latitude, longitude, address, phone, website, image_url)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          facility.name,
+          facility.description || null,
+          facility.category || null,
+          parseFloat(facility.latitude),
+          parseFloat(facility.longitude),
+          facility.address || null,
+          facility.phone || null,
+          facility.website || null,
+          facility.image_url || null
+        ).run()
+        
+        successCount++
+      } catch (error) {
+        errorCount++
+        errors.push({ row: i + 1, error: 'データベース登録エラー', detail: String(error) })
+      }
+    }
+    
+    return c.json({
+      success: true,
+      message: `インポート完了: ${successCount}件成功, ${errorCount}件失敗`,
+      successCount,
+      errorCount,
+      errors: errors.length > 0 ? errors : undefined
+    })
+  } catch (error) {
+    console.error('Import error:', error)
+    return c.json({ success: false, error: 'インポート処理に失敗しました' }, 500)
+  }
+})
+
 // Admin page
 app.get('/admin', requireAuth, (c) => {
   return c.html(`
@@ -293,6 +352,10 @@ app.get('/admin', requireAuth, (c) => {
                         <button onclick="showAddModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>
                             新規登録
+                        </button>
+                        <button onclick="showImportModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-file-excel mr-2"></i>
+                            インポート
                         </button>
                         <button onclick="logout()" class="text-sm text-gray-600 hover:text-gray-800 underline ml-4">
                             ログアウト
@@ -519,7 +582,111 @@ app.get('/admin', requireAuth, (c) => {
             </div>
         </div>
 
+        <!-- Import Modal -->
+        <div id="import-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-file-excel mr-2 text-green-600"></i>
+                    施設データインポート
+                </h3>
+                
+                <!-- Step 1: File Upload -->
+                <div id="import-step-1">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h4 class="font-bold text-blue-800 mb-2">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            対応ファイル形式とフォーマット
+                        </h4>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• CSV形式（.csv）またはExcel形式（.xlsx）</li>
+                            <li>• 必須列: name（施設名）, latitude（緯度）, longitude（経度）</li>
+                            <li>• オプション列: description, category, address, phone, website</li>
+                            <li>• 1行目は列名として扱われます</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-bold mb-2">ファイル選択</label>
+                        <input type="file" id="import-file" accept=".csv,.xlsx" 
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">CSV または Excel ファイルを選択してください</p>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="parseImportFile()" 
+                                class="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-search mr-2"></i>
+                            データを確認
+                        </button>
+                        <button onclick="closeImportModal()" 
+                                class="flex-1 bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500 transition">
+                            <i class="fas fa-times mr-2"></i>
+                            キャンセル
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Preview and Import -->
+                <div id="import-step-2" class="hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <p class="text-green-800">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span id="preview-count">0</span>件のデータが検出されました
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4 max-h-96 overflow-auto border rounded-lg">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-100 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">#</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">施設名</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">カテゴリ</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">緯度</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">経度</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">住所</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-table-body">
+                                <!-- Preview data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="import-errors" class="hidden mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-red-800 font-bold mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            エラーが検出されました
+                        </p>
+                        <ul id="error-list" class="text-sm text-red-700 space-y-1">
+                            <!-- Errors will be listed here -->
+                        </ul>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="executeImport()" 
+                                class="flex-1 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                            <i class="fas fa-upload mr-2"></i>
+                            インポート実行
+                        </button>
+                        <button onclick="resetImport()" 
+                                class="flex-1 bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500 transition">
+                            <i class="fas fa-redo mr-2"></i>
+                            やり直し
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="import-loading" class="hidden text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                    <p class="text-gray-700">処理中...</p>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
         <script>
             async function logout() {
                 try {

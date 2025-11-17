@@ -386,6 +386,202 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// ==================== Import Functions ====================
+
+let importData = [];
+
+// Show import modal
+function showImportModal() {
+    document.getElementById('import-modal').classList.remove('hidden');
+    resetImport();
+}
+
+// Close import modal
+function closeImportModal() {
+    document.getElementById('import-modal').classList.add('hidden');
+    resetImport();
+}
+
+// Reset import state
+function resetImport() {
+    importData = [];
+    document.getElementById('import-file').value = '';
+    document.getElementById('import-step-1').classList.remove('hidden');
+    document.getElementById('import-step-2').classList.add('hidden');
+    document.getElementById('import-loading').classList.add('hidden');
+    document.getElementById('import-errors').classList.add('hidden');
+}
+
+// Parse uploaded file
+async function parseImportFile() {
+    const fileInput = document.getElementById('import-file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        showNotification('error', 'ファイルを選択してください');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('import-step-1').classList.add('hidden');
+    document.getElementById('import-loading').classList.remove('hidden');
+    
+    try {
+        const data = await readFile(file);
+        importData = data;
+        
+        // Show preview
+        document.getElementById('import-loading').classList.add('hidden');
+        document.getElementById('import-step-2').classList.remove('hidden');
+        document.getElementById('preview-count').textContent = importData.length;
+        
+        renderPreview();
+        validateData();
+    } catch (error) {
+        document.getElementById('import-loading').classList.add('hidden');
+        document.getElementById('import-step-1').classList.remove('hidden');
+        showNotification('error', 'ファイルの読み込みに失敗しました: ' + error.message);
+    }
+}
+
+// Read file (CSV or Excel)
+function readFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            try {
+                const data = e.target.result;
+                let result = [];
+                
+                if (file.name.endsWith('.csv')) {
+                    // Parse CSV
+                    result = parseCSV(data);
+                } else if (file.name.endsWith('.xlsx')) {
+                    // Parse Excel using SheetJS
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    result = XLSX.utils.sheet_to_json(firstSheet);
+                } else {
+                    reject(new Error('対応していないファイル形式です'));
+                    return;
+                }
+                
+                resolve(result);
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+        
+        if (file.name.endsWith('.csv')) {
+            reader.readAsText(file);
+        } else {
+            reader.readAsBinaryString(file);
+        }
+    });
+}
+
+// Parse CSV manually
+function parseCSV(text) {
+    const lines = text.split('\n').filter(line => line.trim());
+    if (lines.length === 0) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim());
+    const result = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        const obj = {};
+        
+        headers.forEach((header, index) => {
+            obj[header] = values[index] ? values[index].trim() : '';
+        });
+        
+        result.push(obj);
+    }
+    
+    return result;
+}
+
+// Render preview table
+function renderPreview() {
+    const tbody = document.getElementById('preview-table-body');
+    tbody.innerHTML = '';
+    
+    importData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t hover:bg-gray-50';
+        tr.innerHTML = `
+            <td class="px-4 py-2 text-sm text-gray-600">${index + 1}</td>
+            <td class="px-4 py-2 text-sm font-medium">${row.name || '-'}</td>
+            <td class="px-4 py-2 text-sm">${row.category || '-'}</td>
+            <td class="px-4 py-2 text-sm">${row.latitude || '-'}</td>
+            <td class="px-4 py-2 text-sm">${row.longitude || '-'}</td>
+            <td class="px-4 py-2 text-sm">${row.address || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Validate data
+function validateData() {
+    const errors = [];
+    
+    importData.forEach((row, index) => {
+        if (!row.name) {
+            errors.push(`行${index + 1}: 施設名が必要です`);
+        }
+        if (!row.latitude || isNaN(parseFloat(row.latitude))) {
+            errors.push(`行${index + 1}: 緯度が無効です`);
+        }
+        if (!row.longitude || isNaN(parseFloat(row.longitude))) {
+            errors.push(`行${index + 1}: 経度が無効です`);
+        }
+    });
+    
+    if (errors.length > 0) {
+        const errorList = document.getElementById('error-list');
+        errorList.innerHTML = errors.map(err => `<li>• ${err}</li>`).join('');
+        document.getElementById('import-errors').classList.remove('hidden');
+    } else {
+        document.getElementById('import-errors').classList.add('hidden');
+    }
+    
+    return errors.length === 0;
+}
+
+// Execute import
+async function executeImport() {
+    if (!validateData()) {
+        showNotification('error', 'データにエラーがあります。修正してください。');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('import-step-2').classList.add('hidden');
+    document.getElementById('import-loading').classList.remove('hidden');
+    
+    try {
+        const response = await axios.post('/api/facilities/import', {
+            facilities: importData
+        });
+        
+        if (response.data.success) {
+            showNotification('success', response.data.message);
+            closeImportModal();
+            await loadFacilities();
+        } else {
+            throw new Error(response.data.error);
+        }
+    } catch (error) {
+        document.getElementById('import-loading').classList.add('hidden');
+        document.getElementById('import-step-2').classList.remove('hidden');
+        showNotification('error', 'インポートに失敗しました: ' + (error.response?.data?.error || error.message));
+    }
+}
+
 // Make functions available globally
 window.showAddModal = showAddModal;
 window.closeModal = closeModal;
@@ -394,3 +590,8 @@ window.deleteFacility = deleteFacility;
 window.viewOnMap = viewOnMap;
 window.applyFilters = applyFilters;
 window.removeImage = removeImage;
+window.showImportModal = showImportModal;
+window.closeImportModal = closeImportModal;
+window.parseImportFile = parseImportFile;
+window.executeImport = executeImport;
+window.resetImport = resetImport;
