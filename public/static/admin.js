@@ -511,14 +511,27 @@ function renderPreview() {
     tbody.innerHTML = '';
     
     importData.forEach((row, index) => {
+        const hasLat = row.latitude && !isNaN(parseFloat(row.latitude));
+        const hasLng = row.longitude && !isNaN(parseFloat(row.longitude));
+        const hasAddress = row.address && row.address.trim();
+        
+        // 座標の状態を表示
+        let coordStatus = '';
+        if (hasLat && hasLng) {
+            coordStatus = '<span class="text-green-600"><i class="fas fa-check-circle"></i> あり</span>';
+        } else if (hasAddress) {
+            coordStatus = '<span class="text-yellow-600"><i class="fas fa-exclamation-circle"></i> 自動取得</span>';
+        } else {
+            coordStatus = '<span class="text-red-600"><i class="fas fa-times-circle"></i> なし</span>';
+        }
+        
         const tr = document.createElement('tr');
         tr.className = 'border-t hover:bg-gray-50';
         tr.innerHTML = `
             <td class="px-4 py-2 text-sm text-gray-600">${index + 1}</td>
             <td class="px-4 py-2 text-sm font-medium">${row.name || '-'}</td>
             <td class="px-4 py-2 text-sm">${row.category || '-'}</td>
-            <td class="px-4 py-2 text-sm">${row.latitude || '-'}</td>
-            <td class="px-4 py-2 text-sm">${row.longitude || '-'}</td>
+            <td class="px-4 py-2 text-sm">${coordStatus}</td>
             <td class="px-4 py-2 text-sm">${row.address || '-'}</td>
         `;
         tbody.appendChild(tr);
@@ -528,48 +541,171 @@ function renderPreview() {
 // Validate data
 function validateData() {
     const errors = [];
+    const warnings = [];
     
     importData.forEach((row, index) => {
+        // 施設名は必須
         if (!row.name) {
             errors.push(`行${index + 1}: 施設名が必要です`);
         }
-        if (!row.latitude || isNaN(parseFloat(row.latitude))) {
-            errors.push(`行${index + 1}: 緯度が無効です`);
-        }
-        if (!row.longitude || isNaN(parseFloat(row.longitude))) {
-            errors.push(`行${index + 1}: 経度が無効です`);
+        
+        // 座標チェック（座標がない場合は住所があればOK）
+        const hasLat = row.latitude && !isNaN(parseFloat(row.latitude));
+        const hasLng = row.longitude && !isNaN(parseFloat(row.longitude));
+        const hasAddress = row.address && row.address.trim();
+        
+        if (!hasLat && !hasLng && !hasAddress) {
+            warnings.push(`行${index + 1}: 座標も住所もありません。住所から座標を自動取得できません。`);
+        } else if (!hasLat || !hasLng) {
+            if (hasAddress) {
+                // 住所があれば座標を自動取得するので警告のみ
+                warnings.push(`行${index + 1}: 座標がありません。住所から自動取得します。`);
+            } else {
+                warnings.push(`行${index + 1}: 座標が不完全です（緯度または経度が欠けています）。`);
+            }
         }
     });
     
+    // エラー表示
     if (errors.length > 0) {
         const errorList = document.getElementById('error-list');
-        errorList.innerHTML = errors.map(err => `<li>• ${err}</li>`).join('');
+        errorList.innerHTML = errors.map(err => `<li class="text-red-600">• ${err}</li>`).join('');
         document.getElementById('import-errors').classList.remove('hidden');
     } else {
         document.getElementById('import-errors').classList.add('hidden');
+    }
+    
+    // 警告表示（エラーがない場合のみ）
+    if (errors.length === 0 && warnings.length > 0) {
+        const errorList = document.getElementById('error-list');
+        errorList.innerHTML = `
+            <li class="text-yellow-600 font-semibold mb-2">⚠️ 注意事項:</li>
+            ${warnings.map(warn => `<li class="text-yellow-600">• ${warn}</li>`).join('')}
+            <li class="text-blue-600 mt-2">💡 インポート時に住所から座標を自動取得します。</li>
+        `;
+        document.getElementById('import-errors').classList.remove('hidden');
     }
     
     return errors.length === 0;
 }
 
 // Execute import
+// Geocode a single address and return coordinates
+function geocodeSingleAddress(address) {
+    return new Promise((resolve, reject) => {
+        if (!address || !address.trim()) {
+            resolve({ lat: null, lng: null });
+            return;
+        }
+        
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: address }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const location = results[0].geometry.location;
+                resolve({
+                    lat: location.lat(),
+                    lng: location.lng()
+                });
+            } else {
+                // If geocoding fails, return null coordinates
+                console.warn(`Geocoding failed for address: ${address}, status: ${status}`);
+                resolve({ lat: null, lng: null });
+            }
+        });
+    });
+}
+
+// Geocode multiple addresses with rate limiting
+async function geocodeAddresses(facilities) {
+    const results = [];
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (let i = 0; i < facilities.length; i++) {
+        const facility = facilities[i];
+        
+        // If coordinates already exist, skip geocoding
+        if (facility.latitude && facility.longitude) {
+            results.push(facility);
+            continue;
+        }
+        
+        // If address exists but no coordinates, try geocoding
+        if (facility.address) {
+            try {
+                const coords = await geocodeSingleAddress(facility.address);
+                results.push({
+                    ...facility,
+                    latitude: coords.lat,
+                    longitude: coords.lng
+                });
+                
+                if (coords.lat && coords.lng) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+                
+                // Rate limiting: wait 200ms between requests to avoid API limits
+                if (i < facilities.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+                results.push(facility);
+                failCount++;
+            }
+        } else {
+            // No address, keep as is
+            results.push(facility);
+        }
+    }
+    
+    return { results, successCount, failCount };
+}
+
 async function executeImport() {
     if (!validateData()) {
         showNotification('error', 'データにエラーがあります。修正してください。');
         return;
     }
     
-    // Show loading
+    // Show loading with geocoding message
     document.getElementById('import-step-2').classList.add('hidden');
-    document.getElementById('import-loading').classList.remove('hidden');
+    const loadingDiv = document.getElementById('import-loading');
+    loadingDiv.classList.remove('hidden');
+    loadingDiv.innerHTML = `
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-700 font-semibold">住所から座標を取得中...</p>
+            <p class="text-gray-500 text-sm mt-2">しばらくお待ちください</p>
+        </div>
+    `;
     
     try {
+        // First, geocode addresses to get coordinates
+        const { results, successCount, failCount } = await geocodeAddresses(importData);
+        
+        // Update loading message
+        loadingDiv.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                <p class="text-gray-700 font-semibold">施設データをインポート中...</p>
+                <p class="text-gray-500 text-sm mt-2">座標取得: 成功 ${successCount}件, 失敗 ${failCount}件</p>
+            </div>
+        `;
+        
+        // Then, import the facilities with coordinates
         const response = await axios.post('/api/facilities/import', {
-            facilities: importData
+            facilities: results
         });
         
         if (response.data.success) {
-            showNotification('success', response.data.message);
+            let message = response.data.message;
+            if (successCount > 0 || failCount > 0) {
+                message += ` (住所から座標取得: 成功 ${successCount}件, 失敗 ${failCount}件)`;
+            }
+            showNotification('success', message);
             closeImportModal();
             await loadFacilities();
         } else {

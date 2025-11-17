@@ -650,8 +650,7 @@ app.get('/admin', requireAuth, (c) => {
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">#</th>
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">施設名</th>
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">カテゴリ</th>
-                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">緯度</th>
-                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">経度</th>
+                                    <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">座標状態</th>
                                     <th class="px-4 py-2 text-left text-sm font-bold text-gray-700">住所</th>
                                 </tr>
                             </thead>
