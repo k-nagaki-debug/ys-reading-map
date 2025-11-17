@@ -206,9 +206,9 @@ function showAddModal() {
     document.getElementById('image-preview').classList.add('hidden');
     document.getElementById('facility-image-url').value = '';
     
-    // Set default coordinates (Tokyo)
-    document.getElementById('facility-lat').value = '35.6812';
-    document.getElementById('facility-lng').value = '139.7671';
+    // Clear coordinates (no default values)
+    document.getElementById('facility-lat').value = '';
+    document.getElementById('facility-lng').value = '';
     
     modal.classList.remove('hidden');
 }
@@ -238,8 +238,8 @@ async function editFacility(facilityId) {
             document.getElementById('facility-address').value = facility.address || '';
             document.getElementById('facility-phone').value = facility.phone || '';
             document.getElementById('facility-website').value = facility.website || '';
-            document.getElementById('facility-lat').value = facility.latitude;
-            document.getElementById('facility-lng').value = facility.longitude;
+            document.getElementById('facility-lat').value = facility.latitude || '';
+            document.getElementById('facility-lng').value = facility.longitude || '';
             
             // Reset image preview
             document.getElementById('image-preview').classList.add('hidden');
