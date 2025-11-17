@@ -205,7 +205,8 @@ app.post('/api/facilities', async (c) => {
       data: { id: result.meta.last_row_id, name, latitude, longitude }
     }, 201)
   } catch (error) {
-    return c.json({ success: false, error: 'Failed to create facility' }, 500)
+    console.error('Error creating facility:', error)
+    return c.json({ success: false, error: 'Failed to create facility', details: error.message }, 500)
   }
 })
 
