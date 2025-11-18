@@ -912,11 +912,11 @@ app.get('/', (c) => {
             <div class="flex flex-col lg:flex-row gap-6">
                 <!-- Map Container (Left Side) -->
                 <div class="flex-1 bg-white rounded-lg shadow-lg p-4">
-                    <div id="map" class="rounded-lg" style="height: 750px; width: 100%;"></div>
+                    <div id="map" class="rounded-lg" style="height: 850px; width: 100%;"></div>
                 </div>
 
                 <!-- Facility List (Right Side - Vertical Panel) -->
-                <div class="lg:w-80 bg-white rounded-lg shadow-lg p-6 flex flex-col" style="max-height: 798px;">
+                <div class="lg:w-72 bg-white rounded-lg shadow-lg p-5 flex flex-col" style="max-height: 898px;">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">
                         <i class="fas fa-list mr-2"></i>
                         登録施設一覧
@@ -1075,11 +1075,11 @@ app.get('/edit', requireAuth, (c) => {
             <div class="flex flex-col lg:flex-row gap-6">
                 <!-- Map Container (Left Side) -->
                 <div class="flex-1 bg-white rounded-lg shadow-lg p-4">
-                    <div id="map" class="rounded-lg" style="height: 750px; width: 100%;"></div>
+                    <div id="map" class="rounded-lg" style="height: 850px; width: 100%;"></div>
                 </div>
 
                 <!-- Facility List (Right Side - Vertical Panel) -->
-                <div class="lg:w-80 bg-white rounded-lg shadow-lg p-6 flex flex-col" style="max-height: 798px;">
+                <div class="lg:w-72 bg-white rounded-lg shadow-lg p-5 flex flex-col" style="max-height: 898px;">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">
                         <i class="fas fa-list mr-2"></i>
                         登録施設一覧
