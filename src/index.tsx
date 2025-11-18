@@ -359,9 +359,9 @@ app.get('/admin', requireAuth, (c) => {
                         <p class="text-sm text-gray-600 mt-1">Hospital Management Dashboard</p>
                     </div>
                     <div class="flex gap-3 items-center">
-                        <a href="/edit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                            <i class="fas fa-edit mr-2"></i>
-                            編集モード
+                        <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-eye mr-2"></i>
+                            閲覧モード
                         </a>
                         <button onclick="showAddModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>
