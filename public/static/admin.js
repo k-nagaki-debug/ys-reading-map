@@ -13,8 +13,8 @@ function setupEventListeners() {
     const searchInput = document.getElementById('search-input');
     const departmentFilter = document.getElementById('category-filter');
     const sortSelect = document.getElementById('sort-select');
-    const facilityForm = document.getElementById('hospital-form');
-    const facilityImage = document.getElementById('hospital-image');
+    const hospitalForm = document.getElementById('hospital-form');
+    const hospitalImage = document.getElementById('hospital-image');
     
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
@@ -30,12 +30,12 @@ function setupEventListeners() {
     
     // Form submission
     if (hospitalForm) {
-        facilityForm.addEventListener('submit', handleFormSubmit);
+        hospitalForm.addEventListener('submit', handleFormSubmit);
     }
     
     // Image file selection
     if (hospitalImage) {
-        facilityImage.addEventListener('change', handleImageSelection);
+        hospitalImage.addEventListener('change', handleImageSelection);
     }
 }
 
@@ -138,7 +138,9 @@ function displayHospitals() {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${hospital.phone || '<span class="text-gray-400">-</span>'}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    ${hospital.emergency ? '<span class="status-badge bg-red-100 text-red-800"><i class="fas fa-ambulance"></i> 対応可</span>' : '<span class="text-gray-400">-</span>'}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onclick="viewOnMap(${hospital.latitude}, ${hospital.longitude})" 
                             class="text-green-600 hover:text-green-900 mr-3" title="地図で表示">
@@ -161,15 +163,14 @@ function displayHospitals() {
 // Update statistics
 function updateHospitalStats() {
     const totalCount = allHospitals.length;
-    const tourismCount = allHospitals.filter(f => f.category === '観光').length;
-    const restaurantCount = allHospitals.filter(f => f.category === '飲食').length;
-    const otherCount = allHospitals.filter(f => !f.category || 
-        !['観光', '飲食'].includes(f.category)).length;
+    const internalCount = allHospitals.filter(h => h.departments && h.departments.includes('内科')).length;
+    const pediatricCount = allHospitals.filter(h => h.departments && h.departments.includes('小児科')).length;
+    const emergencyCount = allHospitals.filter(h => h.emergency === 1 || h.emergency === true).length;
     
     document.getElementById('total-count').textContent = totalCount;
-    document.getElementById('tourism-count').textContent = tourismCount;
-    document.getElementById('restaurant-count').textContent = restaurantCount;
-    document.getElementById('other-count').textContent = otherCount;
+    document.getElementById('internal-count').textContent = internalCount;
+    document.getElementById('pediatric-count').textContent = pediatricCount;
+    document.getElementById('emergency-count').textContent = emergencyCount;
 }
 
 // Handle image file selection
@@ -194,13 +195,16 @@ function removeImage() {
 }
 
 // Show add modal
-function showAddHospitalModal() {
+function showAddModal() {
     const modal = document.getElementById('hospital-modal');
     const form = document.getElementById('hospital-form');
     const modalTitle = document.getElementById('modal-title');
     
     form.reset();
-    modalTitle.textContent = '新規施設登録';
+    modalTitle.textContent = '新規病院登録';
+    
+    // Clear hospital ID
+    document.getElementById('hospital-id').value = '';
     
     // Reset image preview
     document.getElementById('image-preview').classList.add('hidden');
@@ -210,8 +214,14 @@ function showAddHospitalModal() {
     document.getElementById('hospital-lat').value = '';
     document.getElementById('hospital-lng').value = '';
     
+    // Reset emergency checkbox
+    document.getElementById('hospital-emergency').checked = false;
+    
     modal.classList.remove('hidden');
 }
+
+// Alias for backward compatibility
+window.showAddHospitalModal = showAddModal;
 
 // Close modal
 function closeModal() {
@@ -222,14 +232,14 @@ function closeModal() {
 // Edit facility
 async function editFacility(hospitalId) {
     try {
-        const response = await axios.get(`/api/hospitals/${facilityId}`);
+        const response = await axios.get(`/api/hospitals/${hospitalId}`);
         
         if (response.data.success) {
             const hospital = response.data.data;
             const modal = document.getElementById('hospital-modal');
             const modalTitle = document.getElementById('modal-title');
             
-            modalTitle.textContent = '施設情報編集';
+            modalTitle.textContent = '病院情報編集';
             
             document.getElementById('hospital-id').value = hospital.id;
             document.getElementById('hospital-name').value = hospital.name;
@@ -240,6 +250,12 @@ async function editFacility(hospitalId) {
             document.getElementById('hospital-website').value = hospital.website || '';
             document.getElementById('hospital-lat').value = hospital.latitude || '';
             document.getElementById('hospital-lng').value = hospital.longitude || '';
+            
+            // Set hospital-specific fields
+            document.getElementById('hospital-business-hours').value = hospital.business_hours || '';
+            document.getElementById('hospital-closed-days').value = hospital.closed_days || '';
+            document.getElementById('hospital-parking').value = hospital.parking || '';
+            document.getElementById('hospital-emergency').checked = hospital.emergency === 1 || hospital.emergency === true;
             
             // Reset image preview
             document.getElementById('image-preview').classList.add('hidden');
@@ -255,27 +271,27 @@ async function editFacility(hospitalId) {
             modal.classList.remove('hidden');
         }
     } catch (error) {
-        console.error('Error loading facility:', error);
-        showNotification('施設情報の取得に失敗しました', 'error');
+        console.error('Error loading hospital:', error);
+        showNotification('病院情報の取得に失敗しました', 'error');
     }
 }
 
 // Delete facility
 async function deleteHospital(hospitalId) {
-    if (!confirm('この施設を削除してもよろしいですか？\nこの操作は取り消せません。')) {
+    if (!confirm('この病院を削除してもよろしいですか？\nこの操作は取り消せません。')) {
         return;
     }
     
     try {
-        const response = await axios.delete(`/api/hospitals/${facilityId}`);
+        const response = await axios.delete(`/api/hospitals/${hospitalId}`);
         
         if (response.data.success) {
-            showNotification('施設を削除しました', 'success');
+            showNotification('病院を削除しました', 'success');
             await loadHospitals();
         }
     } catch (error) {
-        console.error('Error deleting facility:', error);
-        showNotification('施設の削除に失敗しました', 'error');
+        console.error('Error deleting hospital:', error);
+        showNotification('病院の削除に失敗しました', 'error');
     }
 }
 
@@ -311,29 +327,33 @@ async function handleFormSubmit(e) {
         
         const hospitalData = {
             name: document.getElementById('hospital-name').value,
-            category: document.getElementById('hospital-departments').value,
+            departments: document.getElementById('hospital-departments').value,
             description: document.getElementById('hospital-description').value,
             address: document.getElementById('hospital-address').value,
             phone: document.getElementById('hospital-phone').value,
             website: document.getElementById('hospital-website').value,
-            latitude: parseFloat(document.getElementById('hospital-lat').value),
-            longitude: parseFloat(document.getElementById('hospital-lng').value),
-            image_url: imageUrl || null
+            latitude: parseFloat(document.getElementById('hospital-lat').value) || null,
+            longitude: parseFloat(document.getElementById('hospital-lng').value) || null,
+            image_url: imageUrl || null,
+            business_hours: document.getElementById('hospital-business-hours').value || null,
+            closed_days: document.getElementById('hospital-closed-days').value || null,
+            parking: document.getElementById('hospital-parking').value || null,
+            emergency: document.getElementById('hospital-emergency').checked ? 1 : 0
         };
         
-        console.log('Facility data:', hospitalData);
+        console.log('Hospital data:', hospitalData);
         
         let response;
         if (hospitalId) {
-            // Update existing facility
+            // Update existing hospital
             console.log('Updating hospital...');
-            response = await axios.put(`/api/hospitals/${facilityId}`, hospitalData);
-            showNotification('施設情報を更新しました', 'success');
+            response = await axios.put(`/api/hospitals/${hospitalId}`, hospitalData);
+            showNotification('病院情報を更新しました', 'success');
         } else {
-            // Create new facility
+            // Create new hospital
             console.log('Creating new hospital...');
             response = await axios.post('/api/hospitals', hospitalData);
-            showNotification('施設を登録しました', 'success');
+            showNotification('病院を登録しました', 'success');
         }
         
         console.log('Response:', response.data);
@@ -343,9 +363,9 @@ async function handleFormSubmit(e) {
             await loadHospitals();
         }
     } catch (error) {
-        console.error('Error saving facility:', error);
+        console.error('Error saving hospital:', error);
         console.error('Error details:', error.response?.data || error.message);
-        showNotification('施設の保存に失敗しました: ' + (error.response?.data?.error || error.message), 'error');
+        showNotification('病院の保存に失敗しました: ' + (error.response?.data?.error || error.message), 'error');
     }
 }
 
@@ -763,7 +783,7 @@ async function geocodeAddress() {
 }
 
 // Make functions available globally
-window.showAddHospitalModal = showAddHospitalModal;
+window.showAddModal = showAddModal;
 window.closeModal = closeModal;
 window.editFacility = editFacility;
 window.deleteHospital = deleteHospital;
