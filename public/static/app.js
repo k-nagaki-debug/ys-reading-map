@@ -311,14 +311,28 @@ function centerMapOnHospitals(facilities) {
 function addMarker(hospital) {
     const position = { lat: hospital.latitude, lng: hospital.longitude };
     
-    // Red marker for saved facilities
+    // Determine marker icon
+    let markerIcon;
+    if (hospital.remote_reading_provider && hospital.remote_reading_provider.includes('ワイズ・リーディング')) {
+        // Special icon for Y's READING hospitals
+        markerIcon = {
+            url: '/static/ys-reading-pin.png',
+            scaledSize: new google.maps.Size(40, 40),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(20, 40)
+        };
+    } else {
+        // Red marker for saved facilities
+        markerIcon = {
+            url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+        };
+    }
+    
     const marker = new google.maps.Marker({
         position: position,
         map: map,
         title: hospital.name,
-        icon: {
-            url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-        }
+        icon: markerIcon
     });
     
     // Create info window content

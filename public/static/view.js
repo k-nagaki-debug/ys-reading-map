@@ -90,12 +90,26 @@ function updateMarkers() {
 function addMarker(hospital) {
     const position = { lat: hospital.latitude, lng: hospital.longitude };
     
+    // Determine marker icon
+    let markerIcon = undefined;
+    if (hospital.remote_reading_provider && hospital.remote_reading_provider.includes('ワイズ・リーディング')) {
+        // Special icon for Y's READING hospitals
+        markerIcon = {
+            url: '/static/ys-reading-pin.png',
+            scaledSize: new google.maps.Size(40, 40),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(20, 40)
+        };
+    } else if (hospital.emergency) {
+        markerIcon = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+    }
+    
     const marker = new google.maps.Marker({
         position: position,
         map: map,
         title: hospital.name,
         animation: google.maps.Animation.DROP,
-        icon: hospital.emergency ? 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' : undefined
+        icon: markerIcon
     });
     
     // Create modality badges
