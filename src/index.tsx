@@ -411,8 +411,8 @@ app.get('/admin', requireAuth, (c) => {
                             <p class="text-gray-600 text-sm">ワイズ・リーディング</p>
                             <p id="ys-reading-count" class="text-3xl font-bold text-gray-800">0</p>
                         </div>
-                        <div class="bg-indigo-100 p-3 rounded-full">
-                            <i class="fas fa-check-circle text-indigo-600 text-xl"></i>
+                        <div class="bg-indigo-100 p-3 rounded-full flex items-center justify-center">
+                            <img src="/static/ys-reading-icon.png" alt="Y's Reading" class="w-6 h-6">
                         </div>
                     </div>
                 </div>
