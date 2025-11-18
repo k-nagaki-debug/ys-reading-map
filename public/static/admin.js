@@ -308,11 +308,11 @@ async function handleFormSubmit(e) {
     
     console.log('Form submitted');
     
-    const facilityId = document.getElementById('hospital-id').value;
+    const hospitalId = document.getElementById('hospital-id').value;
     const imageFile = document.getElementById('hospital-image').files[0];
     let imageUrl = document.getElementById('hospital-image-url').value;
     
-    console.log('Facility ID:', facilityId);
+    console.log('Hospital ID:', hospitalId);
     console.log('Image file:', imageFile);
     
     try {
