@@ -348,15 +348,31 @@ function createPopupContent(hospital) {
     const imageHtml = hospital.image_url ? 
         `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 0.5rem; margin-top: 0.5rem;">` : '';
     
+    // Create modality badges
+    const modalityBadges = [];
+    if (hospital.has_ct) modalityBadges.push('CT');
+    if (hospital.has_mri) modalityBadges.push('MRI');
+    if (hospital.has_pet) modalityBadges.push('PET');
+    const modalityHtml = modalityBadges.length > 0 
+        ? `<p style="margin-top: 0.5rem; font-size: 0.875rem; color: #4b5563;"><strong>医療機器:</strong> ${modalityBadges.map(m => `<span style="display: inline-block; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px;">${m}</span>`).join('')}</p>`
+        : '';
+    
+    // Create remote reading info
+    const remoteReadingHtml = hospital.has_remote_reading
+        ? `<p style="font-size: 0.875rem; color: #4b5563;"><strong>遠隔読影サービス:</strong> ${hospital.remote_reading_provider || '対応'}</p>`
+        : '';
+    
     return `
         <div style="max-width: 300px;">
             <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem; color: #1f2937;">${hospital.name}</h3>
             ${categoryBadge}
             ${imageHtml}
+            ${modalityHtml}
+            ${remoteReadingHtml}
             ${hospital.description ? `<p style="margin-top: 0.5rem; color: #374151;">${hospital.description}</p>` : ''}
             ${hospital.address ? `<p style="margin-top: 0.5rem; font-size: 0.875rem; color: #4b5563;"><i class="fas fa-map-marker-alt"></i> ${hospital.address}</p>` : ''}
             ${hospital.phone ? `<p style="font-size: 0.875rem; color: #4b5563;"><i class="fas fa-phone"></i> ${hospital.phone}</p>` : ''}
-            ${hospital.website ? `<p style="font-size: 0.875rem;"><a href="${hospital.website}" target="_blank" style="color: #2563eb; text-decoration: underline;"><i class="fas fa-external-link-alt"></i> 記事リンク</a></p>` : ''}
+            ${hospital.website ? `<p style="font-size: 0.875rem;"><a href="${hospital.website}" target="_blank" style="color: #2563eb; text-decoration: underline;"><i class="fas fa-external-link-alt"></i> ウェブサイト</a></p>` : ''}
             <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
                 <button onclick="editFacility(${hospital.id})" style="font-size: 0.875rem; background-color: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
                     <i class="fas fa-edit"></i> 編集

@@ -98,6 +98,20 @@ function addMarker(hospital) {
         icon: hospital.emergency ? 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' : undefined
     });
     
+    // Create modality badges
+    const modalityBadges = [];
+    if (hospital.has_ct) modalityBadges.push('CT');
+    if (hospital.has_mri) modalityBadges.push('MRI');
+    if (hospital.has_pet) modalityBadges.push('PET');
+    const modalityHtml = modalityBadges.length > 0 
+        ? `<p style="margin: 5px 0; color: #4b5563;"><strong>医療機器:</strong> ${modalityBadges.map(m => `<span style="display: inline-block; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px;">${m}</span>`).join('')}</p>`
+        : '';
+    
+    // Create remote reading info
+    const remoteReadingHtml = hospital.has_remote_reading
+        ? `<p style="margin: 5px 0; color: #4b5563;"><strong>遠隔読影サービス:</strong> ${hospital.remote_reading_provider || '対応'}</p>`
+        : '';
+    
     // Create info window content
     const infoContent = `
         <div style="max-width: 300px;">
@@ -107,12 +121,11 @@ function addMarker(hospital) {
             </h3>
             ${hospital.image_url ? `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">` : ''}
             ${hospital.departments ? `<p style="margin: 5px 0; color: #4b5563;"><strong>診療科目:</strong> ${hospital.departments}</p>` : ''}
+            ${modalityHtml}
+            ${remoteReadingHtml}
             ${hospital.description ? `<p style="margin: 5px 0; color: #6b7280;">${hospital.description}</p>` : ''}
             ${hospital.address ? `<p style="margin: 5px 0; color: #4b5563;"><strong>住所:</strong> ${hospital.address}</p>` : ''}
             ${hospital.phone ? `<p style="margin: 5px 0; color: #4b5563;"><strong>電話:</strong> ${hospital.phone}</p>` : ''}
-            ${hospital.business_hours ? `<p style="margin: 5px 0; color: #4b5563;"><strong>診療時間:</strong> ${hospital.business_hours}</p>` : ''}
-            ${hospital.closed_days ? `<p style="margin: 5px 0; color: #4b5563;"><strong>休診日:</strong> ${hospital.closed_days}</p>` : ''}
-            ${hospital.parking ? `<p style="margin: 5px 0; color: #4b5563;"><strong>駐車場:</strong> ${hospital.parking}</p>` : ''}
             ${hospital.website ? `<p style="margin: 5px 0;"><a href="${hospital.website}" target="_blank" style="color: #3b82f6; text-decoration: underline;">ウェブサイト</a></p>` : ''}
         </div>
     `;
