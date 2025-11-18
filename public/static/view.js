@@ -29,21 +29,21 @@ async function initMap() {
 // Setup search and filter event listeners
 function setupSearchAndFilter() {
     const searchInput = document.getElementById('map-search-input');
-    const categoryFilter = document.getElementById('map-category-filter');
+    const remoteReadingFilter = document.getElementById('map-remote-reading-filter');
     
     if (searchInput) {
         searchInput.addEventListener('input', applyFilters);
     }
     
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', applyFilters);
+    if (remoteReadingFilter) {
+        remoteReadingFilter.addEventListener('change', applyFilters);
     }
 }
 
 // Apply search and filter
 function applyFilters() {
     const searchTerm = document.getElementById('map-search-input')?.value.toLowerCase() || '';
-    const selectedDepartment = document.getElementById('map-category-filter')?.value || '';
+    const remoteReadingFilter = document.getElementById('map-remote-reading-filter')?.value || '';
     
     filteredHospitals = allHospitals.filter(hospital => {
         const matchesSearch = !searchTerm || 
@@ -51,10 +51,14 @@ function applyFilters() {
             (hospital.description && hospital.description.toLowerCase().includes(searchTerm)) ||
             (hospital.address && hospital.address.toLowerCase().includes(searchTerm));
         
-        const matchesDepartment = !selectedDepartment || 
-            (hospital.departments && hospital.departments.includes(selectedDepartment));
+        let matchesRemoteReading = true;
+        if (remoteReadingFilter === 'has_service') {
+            matchesRemoteReading = hospital.has_remote_reading === 1 || hospital.has_remote_reading === true;
+        } else if (remoteReadingFilter === 'ys_reading') {
+            matchesRemoteReading = hospital.remote_reading_provider && hospital.remote_reading_provider.includes('ワイズ・リーディング');
+        }
         
-        return matchesSearch && matchesDepartment;
+        return matchesSearch && matchesRemoteReading;
     });
     
     // Update markers on map

@@ -911,17 +911,12 @@ app.get('/', (c) => {
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">カテゴリ</label>
-                            <select id="map-category-filter" 
+                            <label class="block text-sm font-medium text-gray-700 mb-2">遠隔読影サービス</label>
+                            <select id="map-remote-reading-filter" 
                                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">すべて</option>
-                                <option value="観光">観光</option>
-                                <option value="飲食">飲食</option>
-                                <option value="宿泊">宿泊</option>
-                                <option value="ショッピング">ショッピング</option>
-                                <option value="寺社">寺社</option>
-                                <option value="公園">公園</option>
-                                <option value="その他">その他</option>
+                                <option value="has_service">遠隔読影あり</option>
+                                <option value="ys_reading">ワイズ・リーディング</option>
                             </select>
                         </div>
                     </div>
@@ -1074,17 +1069,12 @@ app.get('/edit', requireAuth, (c) => {
                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">カテゴリ</label>
-                            <select id="map-category-filter" 
+                            <label class="block text-sm font-medium text-gray-700 mb-2">遠隔読影サービス</label>
+                            <select id="map-remote-reading-filter" 
                                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="">すべて</option>
-                                <option value="観光">観光</option>
-                                <option value="飲食">飲食</option>
-                                <option value="宿泊">宿泊</option>
-                                <option value="ショッピング">ショッピング</option>
-                                <option value="寺社">寺社</option>
-                                <option value="公園">公園</option>
-                                <option value="その他">その他</option>
+                                <option value="has_service">遠隔読影あり</option>
+                                <option value="ys_reading">ワイズ・リーディング</option>
                             </select>
                         </div>
                     </div>
