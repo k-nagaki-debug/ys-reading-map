@@ -160,11 +160,9 @@ function displayHospitals() {
 // Update statistics
 function updateHospitalStats() {
     const totalCount = allHospitals.length;
-    const internalCount = allHospitals.filter(h => h.departments && h.departments.includes('内科')).length;
-    const pediatricCount = allHospitals.filter(h => h.departments && h.departments.includes('小児科')).length;
+    const remoteReadingCount = allHospitals.filter(h => h.has_remote_reading === 1 || h.has_remote_reading === true).length;
     document.getElementById('total-count').textContent = totalCount;
-    document.getElementById('internal-count').textContent = internalCount;
-    document.getElementById('pediatric-count').textContent = pediatricCount;
+    document.getElementById('remote-reading-count').textContent = remoteReadingCount;
 }
 
 // Handle image file selection

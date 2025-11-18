@@ -382,7 +382,7 @@ app.get('/admin', requireAuth, (c) => {
         <!-- Main Content -->
         <main class="container mx-auto px-4 py-8">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -397,22 +397,11 @@ app.get('/admin', requireAuth, (c) => {
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-600 text-sm">内科</p>
-                            <p id="internal-count" class="text-3xl font-bold text-gray-800">0</p>
+                            <p class="text-gray-600 text-sm">遠隔読影サービス</p>
+                            <p id="remote-reading-count" class="text-3xl font-bold text-gray-800">0</p>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-full">
-                            <i class="fas fa-stethoscope text-green-600 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-600 text-sm">小児科</p>
-                            <p id="pediatric-count" class="text-3xl font-bold text-gray-800">0</p>
-                        </div>
-                        <div class="bg-yellow-100 p-3 rounded-full">
-                            <i class="fas fa-baby text-yellow-600 text-xl"></i>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-network-wired text-purple-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
