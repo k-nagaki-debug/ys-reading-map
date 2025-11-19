@@ -471,7 +471,11 @@ app.get('/admin', requireAuth, (c) => {
                     min-height: auto;
                 }
                 .mobile-map {
-                    height: 400px;
+                    height: 400px !important;
+                    min-height: 400px;
+                }
+                .mobile-map #map {
+                    height: 400px !important;
                 }
                 .mobile-list {
                     max-height: 500px;
@@ -1009,7 +1013,11 @@ app.get('/', (c) => {
                     min-height: auto;
                 }
                 .mobile-map {
-                    height: 400px;
+                    height: 400px !important;
+                    min-height: 400px;
+                }
+                .mobile-map #map {
+                    height: 400px !important;
                 }
                 .mobile-list {
                     max-height: 500px;
@@ -1031,7 +1039,7 @@ app.get('/', (c) => {
             <!-- Map and Facility List Container (Responsive Layout) -->
             <div class="flex flex-col lg:flex-row gap-6 map-container px-4">
                 <!-- Map Container (Top on mobile, Left on desktop) -->
-                <div class="flex-1 bg-white rounded-lg shadow-lg p-4 h-full mobile-map lg:h-full">
+                <div class="flex-1 bg-white rounded-lg shadow-lg p-4 mobile-map lg:h-full">
                     <div id="map" class="rounded-lg h-full w-full"></div>
                 </div>
 
