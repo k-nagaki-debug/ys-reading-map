@@ -1077,10 +1077,10 @@ app.get('/', (c) => {
                             </div>
                         \`;
                     } else {
-                        // Show small login link for non-authenticated users
+                        // Show lock icon button for non-authenticated users
                         buttonsContainer.innerHTML = \`
-                            <a href="/login" class="text-sm text-gray-600 hover:text-gray-800 underline">
-                                ログイン
+                            <a href="/login" class="inline-flex items-center justify-center w-10 h-10 bg-gray-600 text-white rounded-lg shadow hover:bg-gray-700 transition">
+                                <i class="fas fa-lock"></i>
                             </a>
                         \`;
                     }
