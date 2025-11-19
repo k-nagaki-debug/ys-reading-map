@@ -899,8 +899,8 @@ app.get('/', (c) => {
         </style>
     </head>
     <body class="bg-gray-50">
-        <div class="container mx-auto px-4 py-8">
-            <div class="mb-8 flex justify-between items-center">
+        <div class="px-4 py-8">
+            <div class="container mx-auto mb-8 flex justify-between items-center">
                 <div>
                     <h1 class="text-4xl font-bold"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-12 inline-block"></h1>
                 </div>
@@ -910,7 +910,7 @@ app.get('/', (c) => {
             </div>
 
             <!-- Map and Facility List Container (Horizontal Layout) -->
-            <div class="flex flex-col lg:flex-row gap-6 map-container">
+            <div class="flex flex-col lg:flex-row gap-6 map-container px-4">
                 <!-- Map Container (Left Side) -->
                 <div class="flex-1 bg-white rounded-lg shadow-lg p-4 h-full">
                     <div id="map" class="rounded-lg h-full w-full"></div>
@@ -1042,8 +1042,8 @@ app.get('/edit', requireAuth, (c) => {
         </style>
     </head>
     <body class="bg-gray-50">
-        <div class="container mx-auto px-4 py-8">
-            <div class="mb-8 flex justify-between items-center">
+        <div class="px-4 py-8">
+            <div class="container mx-auto mb-8 flex justify-between items-center">
                 <div>
                     <h1 class="text-4xl font-bold mb-1"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-12 inline-block"></h1>
                     <p class="text-gray-600">編集モード</p>
@@ -1064,7 +1064,7 @@ app.get('/edit', requireAuth, (c) => {
             </div>
 
             <!-- Map and Facility List Container (Horizontal Layout) -->
-            <div class="flex flex-col lg:flex-row gap-6 map-container">
+            <div class="flex flex-col lg:flex-row gap-6 map-container px-4">
                 <!-- Map Container (Left Side) -->
                 <div class="flex-1 bg-white rounded-lg shadow-lg p-4 h-full">
                     <div id="map" class="rounded-lg h-full w-full"></div>
