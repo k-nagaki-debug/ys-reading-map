@@ -354,10 +354,12 @@ function addMarker(hospital) {
 // Create popup content
 function createPopupContent(hospital) {
     const categoryBadge = hospital.departments ? 
-        `<span style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">${hospital.departments}</span>` : '';
+        `<div style="margin: 8px 0;">
+            <span style="display: inline-block; background-color: #dbeafe; color: #1e40af; font-size: 12px; padding: 4px 10px; border-radius: 6px; font-weight: 500;">${hospital.departments}</span>
+         </div>` : '';
     
     const imageHtml = hospital.image_url ? 
-        `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 0.5rem; margin-top: 0.5rem;">` : '';
+        `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">` : '';
     
     // Create modality badges
     const modalityBadges = [];
@@ -365,30 +367,51 @@ function createPopupContent(hospital) {
     if (hospital.has_mri) modalityBadges.push('MRI');
     if (hospital.has_pet) modalityBadges.push('PET');
     const modalityHtml = modalityBadges.length > 0 
-        ? `<p style="margin-top: 0.5rem; font-size: 0.875rem; color: #4b5563;"><strong>医療機器:</strong> ${modalityBadges.map(m => `<span style="display: inline-block; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px;">${m}</span>`).join('')}</p>`
+        ? `<div style="margin: 12px 0;">
+               <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px;">医療機器</div>
+               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                   ${modalityBadges.map(m => `<span style="display: inline-block; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">${m}</span>`).join('')}
+               </div>
+           </div>`
         : '';
     
     // Create remote reading info
     const remoteReadingHtml = hospital.has_remote_reading
-        ? `<p style="font-size: 0.875rem; color: #4b5563;"><strong>遠隔読影サービス:</strong> ${hospital.remote_reading_provider || '対応'}</p>`
+        ? `<div style="margin: 12px 0; padding: 10px; background: #f0f9ff; border-left: 3px solid #3b82f6; border-radius: 4px;">
+               <div style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 4px;">遠隔読影サービス</div>
+               <div style="font-size: 13px; color: #1e3a8a; font-weight: 500;">${hospital.remote_reading_provider || '対応'}</div>
+           </div>`
         : '';
     
     return `
-        <div style="max-width: 300px;">
-            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5rem; color: #1f2937;">${hospital.name}</h3>
+        <div style="max-width: 320px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #1f2937; line-height: 1.4; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                ${hospital.name}
+            </h3>
             ${categoryBadge}
             ${imageHtml}
+            ${hospital.description ? `<div style="margin: 12px 0; padding: 10px; background: #f9fafb; border-radius: 6px; font-size: 13px; color: #4b5563; line-height: 1.6;">${hospital.description}</div>` : ''}
             ${modalityHtml}
             ${remoteReadingHtml}
-            ${hospital.description ? `<p style="margin-top: 0.5rem; color: #374151;">${hospital.description}</p>` : ''}
-            ${hospital.address ? `<p style="margin-top: 0.5rem; font-size: 0.875rem; color: #4b5563;"><i class="fas fa-map-marker-alt"></i> ${hospital.address}</p>` : ''}
-            ${hospital.phone ? `<p style="font-size: 0.875rem; color: #4b5563;"><i class="fas fa-phone"></i> ${hospital.phone}</p>` : ''}
-            ${hospital.website ? `<p style="font-size: 0.875rem;"><a href="${hospital.website}" target="_blank" style="color: #2563eb; text-decoration: underline;"><i class="fas fa-external-link-alt"></i> ウェブサイト</a></p>` : ''}
-            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
-                <button onclick="editFacility(${hospital.id})" style="font-size: 0.875rem; background-color: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
+            ${hospital.address || hospital.phone || hospital.website ? `<div style="margin: 12px 0; padding-top: 12px; border-top: 1px solid #e5e7eb;">` : ''}
+                ${hospital.address ? `<div style="margin: 8px 0; display: flex; align-items: start;">
+                    <i class="fas fa-map-marker-alt" style="color: #6b7280; margin-right: 8px; margin-top: 2px;"></i>
+                    <span style="font-size: 13px; color: #4b5563; line-height: 1.5;">${hospital.address}</span>
+                </div>` : ''}
+                ${hospital.phone ? `<div style="margin: 8px 0; display: flex; align-items: center;">
+                    <i class="fas fa-phone" style="color: #6b7280; margin-right: 8px;"></i>
+                    <a href="tel:${hospital.phone}" style="font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 500;">${hospital.phone}</a>
+                </div>` : ''}
+                ${hospital.website ? `<div style="margin: 8px 0; display: flex; align-items: center;">
+                    <i class="fas fa-external-link-alt" style="color: #6b7280; margin-right: 8px;"></i>
+                    <a href="${hospital.website}" target="_blank" style="font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 500;">ウェブサイトを開く</a>
+                </div>` : ''}
+            ${hospital.address || hospital.phone || hospital.website ? `</div>` : ''}
+            <div style="margin-top: 16px; display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                <button onclick="editFacility(${hospital.id})" style="flex: 1; font-size: 13px; background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; transition: background 0.2s;">
                     <i class="fas fa-edit"></i> 編集
                 </button>
-                <button onclick="deleteHospital(${hospital.id})" style="font-size: 0.875rem; background-color: #ef4444; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; border: none; cursor: pointer;">
+                <button onclick="deleteHospital(${hospital.id})" style="flex: 1; font-size: 13px; background-color: #ef4444; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; transition: background 0.2s;">
                     <i class="fas fa-trash"></i> 削除
                 </button>
             </div>

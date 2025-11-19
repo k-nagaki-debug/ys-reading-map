@@ -114,28 +114,51 @@ function addMarker(hospital) {
     if (hospital.has_mri) modalityBadges.push('MRI');
     if (hospital.has_pet) modalityBadges.push('PET');
     const modalityHtml = modalityBadges.length > 0 
-        ? `<p style="margin: 5px 0; color: #4b5563;"><strong>医療機器:</strong> ${modalityBadges.map(m => `<span style="display: inline-block; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px;">${m}</span>`).join('')}</p>`
+        ? `<div style="margin: 12px 0;">
+               <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px;">医療機器</div>
+               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                   ${modalityBadges.map(m => `<span style="display: inline-block; background: #3b82f6; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">${m}</span>`).join('')}
+               </div>
+           </div>`
         : '';
     
     // Create remote reading info
     const remoteReadingHtml = hospital.has_remote_reading
-        ? `<p style="margin: 5px 0; color: #4b5563;"><strong>遠隔読影サービス:</strong> ${hospital.remote_reading_provider || '対応'}</p>`
+        ? `<div style="margin: 12px 0; padding: 10px; background: #f0f9ff; border-left: 3px solid #3b82f6; border-radius: 4px;">
+               <div style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 4px;">遠隔読影サービス</div>
+               <div style="font-size: 13px; color: #1e3a8a; font-weight: 500;">${hospital.remote_reading_provider || '対応'}</div>
+           </div>`
         : '';
     
-    // Create info window content
+    // Create info window content with improved design
     const infoContent = `
-        <div style="max-width: 300px;">
-            <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; color: #1f2937;">
+        <div style="max-width: 320px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #1f2937; line-height: 1.4; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
                 ${hospital.name}
             </h3>
-            ${hospital.image_url ? `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">` : ''}
-            ${hospital.departments ? `<p style="margin: 5px 0; color: #4b5563;"><strong>診療科目:</strong> ${hospital.departments}</p>` : ''}
+            ${hospital.image_url ? `<img src="${hospital.image_url}" alt="${hospital.name}" style="width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">` : ''}
+            ${hospital.description ? `<div style="margin: 12px 0; padding: 10px; background: #f9fafb; border-radius: 6px; font-size: 13px; color: #4b5563; line-height: 1.6;">${hospital.description}</div>` : ''}
+            ${hospital.departments ? `<div style="margin: 12px 0;">
+                <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px;">診療科目</div>
+                <div style="font-size: 13px; color: #374151; line-height: 1.5;">${hospital.departments}</div>
+            </div>` : ''}
             ${modalityHtml}
             ${remoteReadingHtml}
-            ${hospital.description ? `<p style="margin: 5px 0; color: #6b7280;">${hospital.description}</p>` : ''}
-            ${hospital.address ? `<p style="margin: 5px 0; color: #4b5563;"><strong>住所:</strong> ${hospital.address}</p>` : ''}
-            ${hospital.phone ? `<p style="margin: 5px 0; color: #4b5563;"><strong>電話:</strong> ${hospital.phone}</p>` : ''}
-            ${hospital.website ? `<p style="margin: 5px 0;"><a href="${hospital.website}" target="_blank" style="color: #3b82f6; text-decoration: underline;">ウェブサイト</a></p>` : ''}
+            ${hospital.address || hospital.phone ? `<div style="margin: 12px 0; padding-top: 12px; border-top: 1px solid #e5e7eb;">` : ''}
+                ${hospital.address ? `<div style="margin: 8px 0; display: flex; align-items: start;">
+                    <span style="font-size: 14px; color: #6b7280; margin-right: 6px;">📍</span>
+                    <span style="font-size: 13px; color: #4b5563; line-height: 1.5;">${hospital.address}</span>
+                </div>` : ''}
+                ${hospital.phone ? `<div style="margin: 8px 0; display: flex; align-items: center;">
+                    <span style="font-size: 14px; color: #6b7280; margin-right: 6px;">📞</span>
+                    <a href="tel:${hospital.phone}" style="font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 500;">${hospital.phone}</a>
+                </div>` : ''}
+            ${hospital.address || hospital.phone ? `</div>` : ''}
+            ${hospital.website ? `<div style="margin-top: 12px;">
+                <a href="${hospital.website}" target="_blank" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; text-decoration: none; transition: background 0.2s;">
+                    🔗 ウェブサイトを開く
+                </a>
+            </div>` : ''}
         </div>
     `;
     
