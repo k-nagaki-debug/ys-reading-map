@@ -59,7 +59,7 @@ async function loadHospitals() {
 // Apply filters and sorting
 function applyFilters() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    const departmentFilter = document.getElementById('category-filter').value;
+    const remoteReadingFilter = document.getElementById('category-filter').value;
     const sortOption = document.getElementById('sort-select').value;
     
     // Filter
@@ -69,9 +69,11 @@ function applyFilters() {
             (hospital.description && hospital.description.toLowerCase().includes(searchTerm)) ||
             (hospital.address && hospital.address.toLowerCase().includes(searchTerm));
         
-        const matchesDepartment = !departmentFilter || hospital.departments === departmentFilter;
+        const matchesRemoteReading = !remoteReadingFilter || 
+            (remoteReadingFilter === '有' && (hospital.has_remote_reading === 1 || hospital.has_remote_reading === true)) ||
+            (remoteReadingFilter === '無' && (hospital.has_remote_reading === 0 || hospital.has_remote_reading === false));
         
-        return matchesSearch && matchesDepartment;
+        return matchesSearch && matchesRemoteReading;
     });
     
     // Sort

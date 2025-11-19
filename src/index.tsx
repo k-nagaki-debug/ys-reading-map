@@ -554,20 +554,12 @@ app.get('/admin', requireAuth, (c) => {
                                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">診療科目</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">遠隔読影サービス</label>
                         <select id="category-filter" 
                                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">すべて</option>
-                            <option value="内科">内科</option>
-                            <option value="外科">外科</option>
-                            <option value="小児科">小児科</option>
-                            <option value="整形外科">整形外科</option>
-                            <option value="皮膚科">皮膚科</option>
-                            <option value="眼科">眼科</option>
-                            <option value="耳鼻科">耳鼻科</option>
-                            <option value="産婦人科">産婦人科</option>
-                            <option value="歯科">歯科</option>
-                            <option value="救急科">救急科</option>
+                            <option value="有">対応あり</option>
+                            <option value="無">対応なし</option>
                         </select>
                     </div>
                     <div>
