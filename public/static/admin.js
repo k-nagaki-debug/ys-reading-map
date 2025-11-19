@@ -503,20 +503,91 @@ function readFile(file) {
     });
 }
 
-// Parse CSV manually
+// Parse CSV with proper handling of quoted fields
 function parseCSV(text) {
+    // Remove BOM if present
+    text = text.replace(/^\uFEFF/, '');
+    
     const lines = text.split('\n').filter(line => line.trim());
     if (lines.length === 0) return [];
     
-    const headers = lines[0].split(',').map(h => h.trim());
+    // Parse a single CSV line with proper quote handling
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    // Escaped quote
+                    current += '"';
+                    i++; // Skip next quote
+                } else {
+                    // Toggle quote state
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                // Field separator
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        // Add last field
+        result.push(current.trim());
+        
+        return result;
+    }
+    
+    // Parse header with Japanese column names mapping
+    const headerLine = parseCSVLine(lines[0]);
+    const headers = headerLine.map(h => {
+        // Map Japanese headers to English field names
+        const headerMap = {
+            'ID': 'id',
+            '施設名': 'name',
+            '説明': 'description',
+            '診療科目': 'departments',
+            '緯度': 'latitude',
+            '経度': 'longitude',
+            '住所': 'address',
+            '電話番号': 'phone',
+            'ウェブサイト': 'website',
+            '画像URL': 'image_url',
+            'CT': 'has_ct',
+            'MRI': 'has_mri',
+            'PET': 'has_pet',
+            '遠隔読影サービス': 'has_remote_reading',
+            '遠隔読影事業者': 'remote_reading_provider',
+            '作成日時': 'created_at',
+            '更新日時': 'updated_at'
+        };
+        
+        return headerMap[h] || h.toLowerCase().replace(/\s+/g, '_');
+    });
+    
     const result = [];
     
+    // Parse data rows
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',');
+        const values = parseCSVLine(lines[i]);
         const obj = {};
         
         headers.forEach((header, index) => {
-            obj[header] = values[index] ? values[index].trim() : '';
+            let value = values[index] || '';
+            
+            // Convert '有'/'無' to boolean
+            if (['has_ct', 'has_mri', 'has_pet', 'has_remote_reading'].includes(header)) {
+                value = value === '有' ? true : (value === '無' ? false : value);
+            }
+            
+            obj[header] = value;
         });
         
         result.push(obj);
@@ -550,7 +621,7 @@ function renderPreview() {
         tr.innerHTML = `
             <td class="px-4 py-2 text-sm text-gray-600">${index + 1}</td>
             <td class="px-4 py-2 text-sm font-medium">${row.name || '-'}</td>
-            <td class="px-4 py-2 text-sm">${row.category || '-'}</td>
+            <td class="px-4 py-2 text-sm">${row.departments || '-'}</td>
             <td class="px-4 py-2 text-sm">${coordStatus}</td>
             <td class="px-4 py-2 text-sm">${row.address || '-'}</td>
         `;
@@ -715,9 +786,9 @@ async function executeImport() {
             </div>
         `;
         
-        // Then, import the facilities with coordinates
+        // Then, import the hospitals with coordinates
         const response = await axios.post('/api/hospitals/import', {
-            facilities: results
+            hospitals: results
         });
         
         if (response.data.success) {

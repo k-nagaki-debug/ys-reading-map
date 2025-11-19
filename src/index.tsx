@@ -356,9 +356,16 @@ app.post('/api/hospitals/import', async (c) => {
       }
       
       try {
+        // Convert boolean values
+        const has_ct = hospital.has_ct === true || hospital.has_ct === 1 || hospital.has_ct === '1' ? 1 : 0
+        const has_mri = hospital.has_mri === true || hospital.has_mri === 1 || hospital.has_mri === '1' ? 1 : 0
+        const has_pet = hospital.has_pet === true || hospital.has_pet === 1 || hospital.has_pet === '1' ? 1 : 0
+        const has_remote_reading = hospital.has_remote_reading === true || hospital.has_remote_reading === 1 || hospital.has_remote_reading === '1' ? 1 : 0
+        
         await c.env.DB.prepare(
-          `INSERT INTO hospitals (name, description, departments, latitude, longitude, address, phone, website, image_url, business_hours, closed_days, parking, emergency)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO hospitals (name, description, departments, latitude, longitude, address, phone, website, image_url, 
+                                  has_ct, has_mri, has_pet, has_remote_reading, remote_reading_provider)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
           hospital.name,
           hospital.description || null,
@@ -369,10 +376,11 @@ app.post('/api/hospitals/import', async (c) => {
           hospital.phone || null,
           hospital.website || null,
           hospital.image_url || null,
-          hospital.business_hours || null,
-          hospital.closed_days || null,
-          hospital.parking || null,
-          hospital.emergency || 0
+          has_ct,
+          has_mri,
+          has_pet,
+          has_remote_reading,
+          hospital.remote_reading_provider || null
         ).run()
         
         successCount++
