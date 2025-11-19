@@ -467,7 +467,14 @@ app.get('/admin', requireAuth, (c) => {
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: 500px;
+                    height: auto;
+                    min-height: auto;
+                }
+                .mobile-map {
+                    height: 400px;
+                }
+                .mobile-list {
+                    max-height: 500px;
                 }
             }
         </style>
@@ -998,7 +1005,14 @@ app.get('/', (c) => {
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: 500px;
+                    height: auto;
+                    min-height: auto;
+                }
+                .mobile-map {
+                    height: 400px;
+                }
+                .mobile-list {
+                    max-height: 500px;
                 }
             }
         </style>
@@ -1014,15 +1028,15 @@ app.get('/', (c) => {
                 </div>
             </div>
 
-            <!-- Map and Facility List Container (Horizontal Layout) -->
+            <!-- Map and Facility List Container (Responsive Layout) -->
             <div class="flex flex-col lg:flex-row gap-6 map-container px-4">
-                <!-- Map Container (Left Side) -->
-                <div class="flex-1 bg-white rounded-lg shadow-lg p-4 h-full">
+                <!-- Map Container (Top on mobile, Left on desktop) -->
+                <div class="flex-1 bg-white rounded-lg shadow-lg p-4 h-full mobile-map lg:h-full">
                     <div id="map" class="rounded-lg h-full w-full"></div>
                 </div>
 
-                <!-- Facility List (Right Side - Vertical Panel) -->
-                <div class="lg:w-72 bg-white rounded-lg shadow-lg p-5 flex flex-col h-full">
+                <!-- Facility List (Bottom on mobile, Right on desktop) -->
+                <div class="w-full lg:w-72 bg-white rounded-lg shadow-lg p-5 flex flex-col mobile-list lg:h-full">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4 flex-shrink-0">
                         <i class="fas fa-list mr-2"></i>
                         登録施設一覧
@@ -1038,7 +1052,7 @@ app.get('/', (c) => {
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">遠隔読影サービス</label>
                             <input type="text" id="map-remote-reading-filter" placeholder="事業者名で検索..." 
-                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 flow:ring-blue-500">
                         </div>
                     </div>
                     
