@@ -1094,6 +1094,17 @@ app.get('/', (c) => {
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
             }
+            /* Search and filter input fields with light blue background */
+            input[type="text"]:not([type="file"]):not([type="hidden"]),
+            input[type="search"],
+            select {
+                background-color: #eff6ff !important; /* Light blue background */
+            }
+            input[type="text"]:focus:not([type="file"]):not([type="hidden"]),
+            input[type="search"]:focus,
+            select:focus {
+                background-color: #dbeafe !important; /* Slightly darker blue on focus */
+            }
             /* Make map and list container responsive to viewport height */
             .map-container {
                 height: calc(100vh - 200px);
