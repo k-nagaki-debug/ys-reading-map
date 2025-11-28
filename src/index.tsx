@@ -1232,8 +1232,8 @@ app.get('/', requireAuth, (c) => {
         <script src="/static/view.js"></script>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-2 flex-shrink-0">
-            <div class="container mx-auto px-4 text-center">
+        <footer class="bg-gray-800 text-white py-2 flex-shrink-0 px-4">
+            <div class="text-center">
                 <p class="text-xs">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
@@ -1508,8 +1508,8 @@ app.get('/edit', requireAuth, (c) => {
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEzrU58Z2R4awlzt8kBitIIpW-wILqzSk&libraries=places&callback=initMap"></script>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-2 flex-shrink-0">
-            <div class="container mx-auto px-4 text-center">
+        <footer class="bg-gray-800 text-white py-2 flex-shrink-0 px-4">
+            <div class="text-center">
                 <p class="text-xs">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
