@@ -951,8 +951,8 @@ app.get('/admin', requireAuth, (c) => {
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEzrU58Z2R4awlzt8kBitIIpW-wILqzSk&libraries=places"></script>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-4 mt-8">
-            <div class="container mx-auto px-4 text-center">
+        <footer class="bg-gray-800 text-white py-4 mt-8 px-4">
+            <div class="text-center">
                 <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
@@ -979,7 +979,7 @@ app.get('/login', (c) => {
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
     <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
-        <div class="container mx-auto px-4 flex-grow flex items-center justify-center">
+        <div class="px-4 flex-grow flex items-center justify-center">
             <div class="max-w-md mx-auto w-full">
                 <!-- Logo and Title -->
                 <div class="text-center mb-8">
@@ -1054,8 +1054,8 @@ app.get('/login', (c) => {
         </script>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-4 mt-auto">
-            <div class="container mx-auto px-4 text-center">
+        <footer class="bg-gray-800 text-white py-4 mt-auto px-4">
+            <div class="text-center">
                 <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
