@@ -1109,11 +1109,11 @@ app.get('/', requireAuth, (c) => {
                 overflow: hidden;
             }
             .map-container {
-                height: calc(100vh - 140px);
+                height: calc(100vh - 180px);
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: calc(100vh - 180px);
+                    height: calc(100vh - 220px);
                 }
                 .mobile-map {
                     height: 50vh !important;
@@ -1123,7 +1123,7 @@ app.get('/', requireAuth, (c) => {
                     height: 100% !important;
                 }
                 .mobile-list {
-                    height: calc(50vh - 180px);
+                    height: calc(50vh - 220px);
                     overflow-y: auto;
                 }
             }
@@ -1229,6 +1229,13 @@ app.get('/', requireAuth, (c) => {
             checkAuth();
         </script>
         <script src="/static/view.js"></script>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-2 flex-shrink-0">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-xs">© 2025 Y'sBESPOKE Co., Ltd.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
@@ -1276,11 +1283,11 @@ app.get('/edit', requireAuth, (c) => {
                 overflow: hidden;
             }
             .map-container {
-                height: calc(100vh - 160px);
+                height: calc(100vh - 200px);
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: calc(100vh - 200px);
+                    height: calc(100vh - 240px);
                 }
             }
         </style>
@@ -1497,6 +1504,13 @@ app.get('/edit', requireAuth, (c) => {
         <script src="/static/app.js"></script>
         <!-- Google Maps API -->
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEzrU58Z2R4awlzt8kBitIIpW-wILqzSk&libraries=places&callback=initMap"></script>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-2 flex-shrink-0">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-xs">© 2025 Y'sBESPOKE Co., Ltd.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
