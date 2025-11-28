@@ -1109,11 +1109,11 @@ app.get('/', requireAuth, (c) => {
                 overflow: hidden;
             }
             .map-container {
-                height: calc(100vh - 180px);
+                height: calc(100vh - 160px);
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: calc(100vh - 220px);
+                    height: calc(100vh - 200px);
                 }
                 .mobile-map {
                     height: 50vh !important;
@@ -1123,7 +1123,7 @@ app.get('/', requireAuth, (c) => {
                     height: 100% !important;
                 }
                 .mobile-list {
-                    height: calc(50vh - 220px);
+                    height: calc(50vh - 200px);
                     overflow-y: auto;
                 }
             }
@@ -1131,7 +1131,7 @@ app.get('/', requireAuth, (c) => {
     </head>
     <body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
         <div class="px-4 py-4 flex-shrink-0">
-            <div class="mb-4 flex justify-between items-center">
+            <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-blue-600 mb-1"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-8 inline-block"></h1>
                     <p class="text-sm text-gray-600 mt-1">Hospital Management Dashboard</p>
@@ -1140,9 +1140,10 @@ app.get('/', requireAuth, (c) => {
                     <!-- Login link will be shown here for non-authenticated users -->
                 </div>
             </div>
+        </div>
 
-            <!-- Map and Facility List Container (Responsive Layout) -->
-            <div class="flex flex-col lg:flex-row gap-4 map-container flex-1 overflow-hidden">
+        <!-- Map and Facility List Container (Responsive Layout) -->
+        <div class="flex flex-col lg:flex-row gap-4 map-container flex-1 overflow-hidden px-4">
                 <!-- Map Container (Top on mobile, Left on desktop) -->
                 <div class="flex-1 bg-white rounded-lg shadow-lg overflow-hidden mobile-map h-full">
                     <div id="map" class="h-full w-full"></div>
@@ -1283,18 +1284,18 @@ app.get('/edit', requireAuth, (c) => {
                 overflow: hidden;
             }
             .map-container {
-                height: calc(100vh - 200px);
+                height: calc(100vh - 180px);
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: calc(100vh - 240px);
+                    height: calc(100vh - 220px);
                 }
             }
         </style>
     </head>
     <body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
         <div class="px-4 py-4 flex-shrink-0">
-            <div class="mb-4 flex justify-between items-center">
+            <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-4xl font-bold mb-1"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-12 inline-block"></h1>
                     <p class="text-gray-600">編集モード</p>
@@ -1313,9 +1314,10 @@ app.get('/edit', requireAuth, (c) => {
                     </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Map and Facility List Container (Horizontal Layout) -->
-            <div class="flex flex-col lg:flex-row gap-4 map-container flex-1 overflow-hidden">
+        <!-- Map and Facility List Container (Horizontal Layout) -->
+        <div class="flex flex-col lg:flex-row gap-4 map-container flex-1 overflow-hidden px-4">
                 <!-- Map Container (Left Side) -->
                 <div class="flex-1 bg-white rounded-lg shadow-lg p-3 h-full overflow-hidden">
                     <div id="map" class="rounded-lg h-full w-full"></div>
