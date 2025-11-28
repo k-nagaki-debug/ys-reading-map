@@ -953,7 +953,7 @@ app.get('/admin', requireAuth, (c) => {
         <!-- Footer -->
         <footer class="bg-gray-800 text-white py-4 mt-8">
             <div class="container mx-auto px-4 text-center">
-                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+                <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
     </body>
@@ -1056,7 +1056,7 @@ app.get('/login', (c) => {
         <!-- Footer -->
         <footer class="bg-gray-800 text-white py-4 mt-8">
             <div class="container mx-auto px-4 text-center">
-                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+                <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
     </body>
@@ -1231,7 +1231,7 @@ app.get('/', requireAuth, (c) => {
         <!-- Footer -->
         <footer class="bg-gray-800 text-white py-4 mt-8">
             <div class="container mx-auto px-4 text-center">
-                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+                <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
     </body>
@@ -1494,7 +1494,7 @@ app.get('/edit', requireAuth, (c) => {
         <!-- Footer -->
         <footer class="bg-gray-800 text-white py-4 mt-8">
             <div class="container mx-auto px-4 text-center">
-                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+                <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
         </footer>
     </body>
