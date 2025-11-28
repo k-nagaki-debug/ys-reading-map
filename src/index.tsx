@@ -949,6 +949,13 @@ app.get('/admin', requireAuth, (c) => {
         <script src="/static/admin.js"></script>
         <!-- Google Maps API for geocoding -->
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEzrU58Z2R4awlzt8kBitIIpW-wILqzSk&libraries=places"></script>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4 mt-8">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
@@ -1045,6 +1052,13 @@ app.get('/login', (c) => {
                 }
             });
         </script>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4 mt-8">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
@@ -1213,6 +1227,13 @@ app.get('/', requireAuth, (c) => {
             checkAuth();
         </script>
         <script src="/static/view.js"></script>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4 mt-8">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
@@ -1469,6 +1490,13 @@ app.get('/edit', requireAuth, (c) => {
         <script src="/static/app.js"></script>
         <!-- Google Maps API -->
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEzrU58Z2R4awlzt8kBitIIpW-wILqzSk&libraries=places&callback=initMap"></script>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4 mt-8">
+            <div class="container mx-auto px-4 text-center">
+                <p class="text-sm">© 2025 Y'sBESPOKE. All rights reserved.</p>
+            </div>
+        </footer>
     </body>
     </html>
   `)
