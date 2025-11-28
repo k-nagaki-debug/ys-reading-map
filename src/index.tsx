@@ -978,9 +978,9 @@ app.get('/login', (c) => {
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     </head>
-    <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
-        <div class="container mx-auto px-4">
-            <div class="max-w-md mx-auto">
+    <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
+        <div class="container mx-auto px-4 flex-grow flex items-center justify-center">
+            <div class="max-w-md mx-auto w-full">
                 <!-- Logo and Title -->
                 <div class="text-center mb-8">
                     <h1 class="text-4xl font-bold mb-2"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-12 inline-block"></h1>
@@ -1054,7 +1054,7 @@ app.get('/login', (c) => {
         </script>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-4 mt-8">
+        <footer class="bg-gray-800 text-white py-4 mt-auto">
             <div class="container mx-auto px-4 text-center">
                 <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
             </div>
@@ -1105,31 +1105,33 @@ app.get('/', requireAuth, (c) => {
                 background-color: #dbeafe !important; /* Slightly darker blue on focus */
             }
             /* Make map and list container responsive to viewport height */
+            body {
+                overflow: hidden;
+            }
             .map-container {
-                height: calc(100vh - 200px);
-                min-height: 500px;
+                height: calc(100vh - 140px);
             }
             @media (max-width: 1023px) {
                 .map-container {
-                    height: auto;
-                    min-height: auto;
+                    height: calc(100vh - 180px);
                 }
                 .mobile-map {
-                    height: 400px !important;
-                    min-height: 400px;
+                    height: 50vh !important;
+                    min-height: 300px;
                 }
                 .mobile-map #map {
-                    height: 400px !important;
+                    height: 100% !important;
                 }
                 .mobile-list {
-                    max-height: 500px;
+                    height: calc(50vh - 180px);
+                    overflow-y: auto;
                 }
             }
         </style>
     </head>
-    <body class="bg-gray-50">
-        <div class="px-4 py-8">
-            <div class="mb-8 flex justify-between items-center">
+    <body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
+        <div class="px-4 py-4 flex-shrink-0">
+            <div class="mb-4 flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-blue-600 mb-1"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-8 inline-block"></h1>
                     <p class="text-sm text-gray-600 mt-1">Hospital Management Dashboard</p>
@@ -1140,14 +1142,14 @@ app.get('/', requireAuth, (c) => {
             </div>
 
             <!-- Map and Facility List Container (Responsive Layout) -->
-            <div class="flex flex-col lg:flex-row gap-6 map-container px-4">
+            <div class="flex flex-col lg:flex-row gap-4 map-container flex-1 overflow-hidden">
                 <!-- Map Container (Top on mobile, Left on desktop) -->
-                <div class="flex-1 bg-white rounded-lg shadow-lg overflow-hidden mobile-map lg:h-full">
+                <div class="flex-1 bg-white rounded-lg shadow-lg overflow-hidden mobile-map h-full">
                     <div id="map" class="h-full w-full"></div>
                 </div>
 
                 <!-- Facility List (Bottom on mobile, Right on desktop) -->
-                <div class="w-full lg:w-72 bg-white rounded-lg shadow-lg p-3 flex flex-col mobile-list lg:h-full">
+                <div class="w-full lg:w-72 bg-white rounded-lg shadow-lg p-3 flex flex-col mobile-list h-full overflow-hidden">
                     <h2 class="text-lg font-bold text-gray-800 mb-3 flex-shrink-0">
                         <i class="fas fa-list mr-2"></i>
                         登録施設一覧
@@ -1227,13 +1229,6 @@ app.get('/', requireAuth, (c) => {
             checkAuth();
         </script>
         <script src="/static/view.js"></script>
-        
-        <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-4 mt-8">
-            <div class="container mx-auto px-4 text-center">
-                <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
-            </div>
-        </footer>
     </body>
     </html>
   `)
@@ -1276,11 +1271,23 @@ app.get('/edit', requireAuth, (c) => {
             .admin-button:active {
                 transform: scale(0.98);
             }
+            /* Make page fit without scrolling */
+            body {
+                overflow: hidden;
+            }
+            .map-container {
+                height: calc(100vh - 160px);
+            }
+            @media (max-width: 1023px) {
+                .map-container {
+                    height: calc(100vh - 200px);
+                }
+            }
         </style>
     </head>
-    <body class="bg-gray-50">
-        <div class="px-4 py-8">
-            <div class="container mx-auto mb-8 flex justify-between items-center">
+    <body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
+        <div class="px-4 py-4 flex-shrink-0">
+            <div class="mb-4 flex justify-between items-center">
                 <div>
                     <h1 class="text-4xl font-bold mb-1"><img src="/static/ys-reading-logo.png" alt="Y's READING" class="h-12 inline-block"></h1>
                     <p class="text-gray-600">編集モード</p>
@@ -1301,9 +1308,9 @@ app.get('/edit', requireAuth, (c) => {
             </div>
 
             <!-- Map and Facility List Container (Horizontal Layout) -->
-            <div class="flex flex-col lg:flex-row gap-6 map-container px-4">
+            <div class="flex flex-col lg:flex-row gap-4 map-container flex-1 overflow-hidden">
                 <!-- Map Container (Left Side) -->
-                <div class="flex-1 bg-white rounded-lg shadow-lg p-4 h-full">
+                <div class="flex-1 bg-white rounded-lg shadow-lg p-3 h-full overflow-hidden">
                     <div id="map" class="rounded-lg h-full w-full"></div>
                 </div>
 
@@ -1490,13 +1497,6 @@ app.get('/edit', requireAuth, (c) => {
         <script src="/static/app.js"></script>
         <!-- Google Maps API -->
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEzrU58Z2R4awlzt8kBitIIpW-wILqzSk&libraries=places&callback=initMap"></script>
-        
-        <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-4 mt-8">
-            <div class="container mx-auto px-4 text-center">
-                <p class="text-sm">© 2025 Y'sBESPOKE Co., Ltd.</p>
-            </div>
-        </footer>
     </body>
     </html>
   `)
